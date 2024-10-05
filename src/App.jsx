@@ -21,6 +21,7 @@ import styled from 'styled-components';
 import closeImage from './assets/close.png'
 import menuImage from './assets/menu.png'
 import maps from './assets/maps.gif'
+import loadPng from './assets/load.gif'
 import load from './assets/Spinner-3.gif'
 import Leaf from 'leaflet';
 
@@ -93,6 +94,7 @@ const App = () => {
   const [ROIdata, setROIdata] = useState([]);
   const [classdata, setclassdata] = useState([]);
   const [enableClasses, setenableClasses] = useState(false);
+  const [enableROI, setenableROI] = useState(true);
   const [drawControl, setdrawControl] = useState(false);
   const [ROISelection, setROISelection] = useState(null);
   const [classSelection, setclassSelection] = useState(null);
@@ -112,6 +114,7 @@ const App = () => {
   const [opacitySlider, setOpacitySlider] = useState(false);
   const [runTour, setRunTour] = useState(true);
   const [showImageButton, setShowImageButton] = useState(true);
+  const [showSegmentButton, setShowSegmentButton] = useState(false);
 
   const [class_Data, setClass_Data] = useState(() => {
     const storedData = localStorage.getItem('class_data');
@@ -342,7 +345,6 @@ const App = () => {
       return;
     }
 
-
     try {
       setLoadingImage(true);  // Show loading before the request
       handleImageShow();
@@ -374,6 +376,8 @@ const App = () => {
       const imageURLFromBackend = URL.createObjectURL(pixelData);
       generateImageFromPixels(imageURLFromBackend);
       setRequestImage(true);
+      setShowImageButton(false);
+      setShowSegmentButton(true);
 
       if (allLayers.length) {
         allLayers.forEach((ele) => {
@@ -383,7 +387,6 @@ const App = () => {
         setAllLayers([]);
         setShowImageButton(false);
       }
-
     } catch (error) {
       if (error.response && error.response.status === 400) {
         const blobError = error.response.data;
@@ -392,6 +395,7 @@ const App = () => {
       } else {
         alert('An unknown error occurred.');
       }
+      window.location.reload();
     } finally {
       setLoading(false); // Stop loading after everything finishes
       setLoadingImage(false);  // Stop loading image
@@ -429,16 +433,14 @@ const App = () => {
       const blob = response.data;
       const reader = new FileReader();
 
-      // Read the Blob as text
       reader.onloadend = async () => {
-        const jsonData = reader.result; // This is the text content of the Blob
-        const maskData = JSON.parse(jsonData); // Parse the JSON string
+        const jsonData = reader.result;
+        const maskData = JSON.parse(jsonData);
         console.log("Parsed Mask Data:", maskData);
-        // const maskURLFromBackend = URL.createObjectURL(maskData); 
         generateMaskFromPixels(maskData);
       }
       reader.readAsText(blob);
-      setRequestMask(true);// Load image masks after sending data
+      setRequestMask(true);
       if (allLayers.length) {
         allLayers.map((ele) => {
           ele[0].removeLayer(ele[1]);
@@ -446,6 +448,9 @@ const App = () => {
 
         setAllLayers([]);
       }
+      setShowSegmentButton(false);
+      setenableClasses(false);
+      setenableROI(false);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         alert(`Error: ${error.response.data}`);
@@ -453,6 +458,7 @@ const App = () => {
       } else {
         alert('An unknown error occurred.');
       }
+      window.location.reload();
     }
     finally {
       setLoadingMask(false); // Stop loading
@@ -514,7 +520,7 @@ const App = () => {
 
       {loading ? (
         <div className="w-full h-[100vh] flex justify-center items-center backdrop-blur-sm backdrop-brightness-50 fixed top-0 left-0 z-[1000]">
-          <img src={maps} alt="Loading..." width={100} />
+          <img src={loadPng} alt="Loading..." width={100} />
         </div>
       ) : null}
 
@@ -692,11 +698,11 @@ const App = () => {
         </div>
       </div>
       <div className="absolute z-[998] bottom-0 flex max-[720px]:flex-col">
-        {showImageButton && <div data-tour="get-image" className="p-2">
+        {showImageButton && <div data-tour="get-image" className="p-2 w-36">
           <button
             type="button"
             onClick={sendGeoJsonData}
-            className="cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
+            className="w-100 cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
           >
             {loadingImage && (
               <div className="">
@@ -708,12 +714,13 @@ const App = () => {
             <div className="text-sm">Image</div>
           </button>
         </div>}
-        <div className="p-2">
+
+        {showSegmentButton && <div className="p-2 w-36">
           <button
             data-tour="get-mask"
             type="button"
             onClick={sendMaskData}
-            className="cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
+            className="w-100 cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
           >
             {loadingMask && (
               <div className="">
@@ -723,15 +730,16 @@ const App = () => {
             {!loadingMask && <img src={maps} alt="" className="w-6  rounded-full" />}
             <div className="text-sm">Segment</div>
           </button>
-        </div>
-        <div className="p-2">
+        </div>}
+
+        <div className="p-2 w-36">
           <button
             type="button"
             onClick={() => {
               window.location.reload();
             }}
             data-tour="reload-btn"
-            className="cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
+            className="w-100 cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
           >
             <img src={maps} alt="" className="w-6 rounded-full" />
             <div className="text-sm">Reload</div>
@@ -777,6 +785,7 @@ const App = () => {
               onChange={handleROISelection}
               value={ROISelection || ""}
               style={{ fontSize: '12px', fontWeight: "bold" }}
+              disabled={!enableROI}
             >
               <option value="-1">Region of Interest</option>
               {ROIdata}
@@ -790,6 +799,7 @@ const App = () => {
                 className="btn btn-primary w-100"
                 data-bs-toggle="modal"
                 data-bs-target="#exampleModal"
+                disabled={!enableROI}
               >
                 New
               </button>
@@ -889,6 +899,7 @@ const App = () => {
             setGeoJsonData={setGeoJsonData}
             setdrawControl={setdrawControl}
             setenableClasses={setenableClasses}
+            setenableROI={setenableROI}
             ROISelection={ROISelection}
             classSelection={classSelection}
             geoJsonData={geoJsonData}

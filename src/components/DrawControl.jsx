@@ -7,7 +7,7 @@ import 'leaflet-draw';
 
 
 
-const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, setenableClasses, ROISelection, classSelection, setGeoJsonData, geoJsonData, getLayers }) => {
+const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, setenableClasses , setenableROI, ROISelection, classSelection, setGeoJsonData, geoJsonData, getLayers }) => {
 
     const map = useMap();
     window.type = true;
@@ -44,6 +44,7 @@ const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, set
                 geojson["properties"]['fill'] = ROISelection.split(":")[1];
                 setGeoJsonData(prevData => [...prevData, geojson]);
                 getLayers([drawnItems, layer]);
+                setdrawControl(false);
 
             } else if (classSelection && classSelection !== "-1" && ROISelection && ROISelection !== "-1") {
                 geojson["properties"]['class'] = classSelectionName;
@@ -52,10 +53,8 @@ const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, set
                 getLayers([drawnItems, layer]);
             }
 
-
-
-
             setenableClasses(true);
+            setenableROI(false);
 
             if (layer && onSelectionClick && ROISelection && ROISelection !== "-1" && !classSelection) {
                 const bounds = layer.getBounds();
