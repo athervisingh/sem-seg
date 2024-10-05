@@ -224,9 +224,9 @@ const App = () => {
   };
 
   const handleClassSelection = (e) => {
-    const value = e.target.value;
-    const name = e.target.name
-    console.log(e.target)
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const value = selectedOption.value;
+    const name = selectedOption.dataset.name;
     console.log(value, name, "Class, Value")
     setclassSelectionName(name)
     setclassSelection(value);
@@ -272,7 +272,7 @@ const App = () => {
     // Retrieve Classes from localStorage
 
     const newData = Object.keys(class_Data).map((key, index) => (
-      <option key={index} value={class_Data[key] || ""} name={key}>
+      <option key={index} value={class_Data[key] || ""} data-name={key}>
         {key}
       </option>
     ));
@@ -463,8 +463,8 @@ const App = () => {
 
   useEffect(() => {
 
-    if (classSelection && classSelection !== "-1") {
-      setThresholdClass(prev => [...prev, classSelection.split(":")[0]]);
+    if (classSelectionName && classSelectionName !== "-1") {
+      setThresholdClass(prev => [...prev, classSelectionName]);
     }
   }, [classSelection]);
 
