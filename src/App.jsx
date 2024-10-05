@@ -239,50 +239,40 @@ const App = () => {
   };
 
   const getROIdata = (name = "") => {
+    const storedData = JSON.parse(localStorage.getItem('roi_data'));
 
-    if (name) {
+    if (storedData) {
+      // Generate the options based on storedData, not roi_Data
+      const newData = Object.keys(storedData).map((ele, index) => (
+        <option key={index} value={storedData[ele] || ""}>
+          {ele}
+          {console.log(storedData[ele])}
+        </option>
+      ));
 
-      const newData = Object.keys(roi_Data).forEach(key => {
-        return<option key={key} value={roi_Data[key]}> 
-        {roi_Data[key]}</option>
-        });
-
+      // Update the ROIdata state with the new options
       setROIdata(newData);
-      setROISelection(roi_Data[name]);
 
-      const value = ROISelection;
+      // If a name is provided, select the ROI and enable/disable controls accordingly
+      if (name) {
+        const selectedValue = storedData[name];
+        setROISelection(selectedValue);
 
-      if (value === "-1") {
-        setenableClasses(false);
-      } else {
-        setdrawControl(true);
+        if (selectedValue === "-1") {
+          setenableClasses(false);
+        } else {
+          setdrawControl(true);
+        }
       }
-    } else {
-      
-      // const newData = Object.keys(localStorage)
-      //   .filter((key) => key !== "ROI" && key !== "Classes")
-      //   .map((key, index) => (
-      //     <option key={index} value={localStorage.getItem(key)}>
-      //       {key}
-      //     </option>
-      //   ));
-
-      const newData = Object.keys(roi_Data).map((key, index) => (
-            <option key={index} value={roi_Data[key]}>
-              {key}
-            </option>
-          ));
-      
-
-      setROIdata(newData);
     }
   };
+
 
   const getclassdata = (name = "") => {
     // Retrieve Classes from localStorage
 
     const newData = Object.keys(class_Data).map((key, index) => (
-      <option key={index} value={class_Data[key]} name={key}>
+      <option key={index} value={class_Data[key] || ""} name={key}>
         {key}
       </option>
     ));
@@ -790,7 +780,6 @@ const App = () => {
             >
               <option value="-1">Region of Interest</option>
               {ROIdata}
-              
             </select>
             <div
               className="w-50"
