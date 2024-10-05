@@ -378,6 +378,7 @@ const App = () => {
       setRequestImage(true);
       setShowImageButton(false);
       setShowSegmentButton(true);
+      setenableClasses(true);
 
       if (allLayers.length) {
         allLayers.forEach((ele) => {
@@ -423,7 +424,7 @@ const App = () => {
       };
       console.log("mask", combinedData);
 
-      const response = await axios.post("http://127.0.0.1:5001//get_mask", combinedData, {
+      const response = await axios.post("http://127.0.0.1:5001/get_mask", combinedData, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -450,7 +451,9 @@ const App = () => {
       }
       setShowSegmentButton(false);
       setenableClasses(false);
-      setenableROI(false);
+      setenableROI(true);
+      setShowImageButton(true);
+      setdrawControl(false);
     } catch (error) {
       if (error.response && error.response.status === 400) {
         alert(`Error: ${error.response.data}`);

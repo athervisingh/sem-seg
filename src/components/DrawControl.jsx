@@ -53,7 +53,6 @@ const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, set
                 getLayers([drawnItems, layer]);
             }
 
-            setenableClasses(true);
             setenableROI(false);
 
             if (layer && onSelectionClick && ROISelection && ROISelection !== "-1" && !classSelection) {
