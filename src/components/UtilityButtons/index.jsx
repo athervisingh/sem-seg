@@ -2,7 +2,7 @@ import React from 'react'
 import load from '../../assets/Spinner-3.gif'
 import maps from '../../assets/maps.gif'
 
-const UtilityButtons = ({showImageButton , sendGeoJsonData , sendMaskData , loadingMask , loadingImage , showSegmentButton}) => {
+const UtilityButtons = ({showImageButton , sendGeoJsonData , sendMaskData , loadingMask , loadingImage , showSegmentButton , ROIdisabled, classdisabled}) => {
     return (
         <div className="absolute z-[998] bottom-0 flex max-[720px]:flex-col">
             {showImageButton && <div data-tour="get-image" className="p-2 w-36">
@@ -10,6 +10,8 @@ const UtilityButtons = ({showImageButton , sendGeoJsonData , sendMaskData , load
                     type="button"
                     onClick={sendGeoJsonData}
                     className="w-100 cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
+                    disabled={ROIdisabled}
+                    style={{opacity : ROIdisabled ? 0.7 : 1}}
                 >
                     {loadingImage && (
                         <div className="">
@@ -28,6 +30,8 @@ const UtilityButtons = ({showImageButton , sendGeoJsonData , sendMaskData , load
                     type="button"
                     onClick={sendMaskData}
                     className="w-100 cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
+                    disabled={classdisabled}
+                    style={{opacity : classdisabled ? 0.7 : 1}}
                 >
                     {loadingMask && (
                         <div className="">

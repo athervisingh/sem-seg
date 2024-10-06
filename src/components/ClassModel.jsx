@@ -18,33 +18,33 @@ const colorOptions = [
 
 const ClassModel = ({ getclassdata }) => {
   const [name, setName] = useState("");
-  const [color, setColor] = useState("#FF0000"); // Default color
+  const [color, setColor] = useState("");
   const modalRef = useRef(null);
 
   const handleSaveData = () => {
     const newName = name.trim();
+    const newColor = color;
 
-    if (!newName || !color) return;
+    setName("");
+    setColor("");
 
-    // let prevData = localStorage.getItem("Classes") || ""; //Athervi
-
-    // localStorage.setItem("Classes", prevData === "" ? (prevData) + `${newName}:${color}` : (prevData + ",") + `${newName}:${color}`);
+    if (!newName || !newColor) return;
 
     var local_data = JSON.parse(localStorage.getItem('class_data'))
     console.log(newName)
     if (local_data !== null) {
 
-      Object.assign(local_data, {[newName]: color})
+      Object.assign(local_data, {[newName]: newColor})
     }
     else {
-      local_data = {[newName]: color}
+      local_data = {[newName]: newColor}
     }
     localStorage.setItem('class_data', JSON.stringify(local_data))
 
     const modal = Modal.getInstance(modalRef.current);
     modal.hide();
 
-    getclassdata(newName, color);
+    getclassdata(newName);
   }
 
   return (
@@ -88,7 +88,7 @@ const ClassModel = ({ getclassdata }) => {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-primary" onClick={handleSaveData}>Save changes</button>
+              <button type="button" className="btn btn-primary" onClick={handleSaveData} disabled={!name || !color}>Save changes</button>
             </div>
           </div>
         </div>

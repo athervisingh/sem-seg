@@ -51,29 +51,28 @@ const StyledSlider = styled.input`
 `;
 
 const OpacitySlider = ({ opacitySlider, imageData, handleSliderChange, setIsDraggingSlider }) => {
-    return (
-        <>
-            {opacitySlider && (
-                Object.keys(imageData).map((name, index) => (
-                    <SliderContainer key={index} style={{ bottom: `${30 + index * 20}%` }}>
-                        <SliderLabel>{name.charAt(0).toUpperCase() + name.slice(1)} Opacity</SliderLabel>
-                        <StyledSlider
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value={imageData[name].opacity}
-                            onChange={handleSliderChange(name)}
-                            onMouseDown={() => setIsDraggingSlider(true)}
-                            onMouseUp={() => setIsDraggingSlider(true)}
-                            onTouchStart={() => setIsDraggingSlider(true)}
-                            onTouchEnd={() => setIsDraggingSlider(true)}
-                        />
-                        <SliderLabel>Area: {imageData[name].area} km{<sup>2</sup>}</SliderLabel>
-                    </SliderContainer>))
-            )}
-        </>
-    )
+  return (
+    <>
+      {opacitySlider && (
+        Object.keys(imageData).map((name, index) => (
+          <SliderContainer key={index} style={{ bottom: `${30 + index * 20}%` }}>
+            <SliderLabel>{name.charAt(0).toUpperCase() + name.slice(1)} Opacity</SliderLabel>
+            <div className='flex justify-center items-center gap-1 z-[1000]'>
+              <button className='btn btn-primary' onClick={handleSliderChange(name, -0.1)} disabled={(imageData[name].opacity) <= 0}>-</button>
+              <StyledSlider
+                type="range"
+                min="0"
+                max="1"
+                step="0.1"
+                value={imageData[name].opacity}
+              />
+              <button className='btn btn-primary' onClick={handleSliderChange(name, 0.1)} disabled={imageData[name].opacity >= 1}>+</button>
+            </div>
+            <SliderLabel>Area: {imageData[name].area} km{<sup>2</sup>}</SliderLabel>
+          </SliderContainer>))
+      )}
+    </>
+  )
 }
 
 export default OpacitySlider

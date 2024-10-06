@@ -42,7 +42,10 @@ const App = () => {
   const [isDraggingSlider, setIsDraggingSlider] = useState(false);
   const [modelThresHold, setModelThresHold] = useState('1');
   const [opacitySlider, setOpacitySlider] = useState(false);
-  const [runTour, setRunTour] = useState(true);
+  const [runTour, setRunTour] = useState(() => {
+    if(localStorage.getItem("tour") === null) return true;
+    else return false;
+  });
   const [showImageButton, setShowImageButton] = useState(true);
   const [showSegmentButton, setShowSegmentButton] = useState(false);
   const [allLayers, setAllLayers] = useState([]);
@@ -95,14 +98,15 @@ const App = () => {
     },
   ];
 
-  const handleSliderChange = (name) => (e) => {
+  const handleSliderChange = (name , value) => () => {
     setImageData(prev => ({
       ...prev,
       [name]: {
         ...prev[name],
-        opacity: parseFloat(e.target.value),
+        opacity: parseFloat(imageData[name].opacity + value),
       },
     }));
+    console.log(imageData[name].opacity + value);
   };
 
   const handleModelChange = (e) => {
@@ -144,7 +148,7 @@ const App = () => {
         <option key={index} value={storedData[ele] || ""}>{ele}</option>
       ));
       setROIdata(newData);
-      if (name) {
+      if (name.length) {
         const selectedValue = storedData[name];
         setROISelection(selectedValue);
         selectedValue === "-1" ? setenableClasses(false) : setdrawControl(true);
@@ -159,8 +163,8 @@ const App = () => {
         <option key={index} value={storedData[ele] || ""} name={ele}>{ele}</option>
       ));
       setclassdata(newData);
-      if (name) {
-        setclassSelection(class_Data[name]);
+      if (name.length) {
+        setclassSelection(storedData[name]);
         name === "-1" ? setdrawControl(false) : setdrawControl(true);
       }
     }
@@ -317,16 +321,16 @@ const App = () => {
 
   return (
     <div className="relative" style={{ zIndex: "10" }}>
-      <div className="absolute z-[1000] bottom-7">
+      <div className="absolute z-[1000] bottom-7" onClick={() => localStorage.setItem("tour", "true")}>
         <Joyride
           steps={steps}
-          run={runTour} // Controls if the tour is running
+          run={runTour}
           continuous
           showSkipButton
           showProgress
           styles={{
             options: {
-              zIndex: 10000,// Ensure it's above everything
+              zIndex: 10000,
             },
           }}
         />
@@ -338,7 +342,7 @@ const App = () => {
       <Slider modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
 
       {/* Image Segment Reload */}
-      <UtilityButtons showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} />
+      <UtilityButtons ROIdisabled={!ROISelection} classdisabled={!classSelection} showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} />
 
       <MapContainer
         center={[28.6139, 77.209]}

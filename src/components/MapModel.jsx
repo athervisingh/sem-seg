@@ -19,26 +19,25 @@ const colorOptions = [
 const MapModel = ({ ROIdata }) => {
 
   const [name, setName] = useState("");
-  const [color, setColor] = useState("red");
+  const [color, setColor] = useState("");
   const modalRef = useRef(null);
 
   const handleSaveData = () => {
     const newName = name.trim();
+    const newColor = color;
 
-    if (!newName || !color) return;
+    setName("");
+    setColor("");
 
-    // localStorage.setItem(newName, color); //Athervi
-
-
+    if (!newName || !newColor) return;
 
     var local_data = JSON.parse(localStorage.getItem('roi_data'))
     console.log(newName)
     if (local_data !== null) {
-
-      Object.assign(local_data, {[newName]: color})
+      Object.assign(local_data, {[newName]: newColor});
     }
     else {
-      local_data = {[newName]: color}
+      local_data = {[newName]: newColor}
     }
     localStorage.setItem('roi_data', JSON.stringify(local_data))
 
@@ -51,13 +50,13 @@ const MapModel = ({ ROIdata }) => {
   return (
     <div>
       <div className="modal fade" ref={modalRef} data-bs-backdrop="false" id="exampleModal" tabIndex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div className="modal-dialog modal-lg"> {/* Large modal for map */}
+        <div className="modal-dialog modal-lg">
           <div className="modal-content absolute top-16 z-[5000]">
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="exampleModalLabel">Select Region of Interest</h1>
               <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div className="modal-body" style={{ height: '400px' }}> {/* Reduced height for map */}
+            <div className="modal-body" style={{ height: '400px' }}>
               <form>
                 <div className="mb-3">
                   <label htmlFor="name" className="form-label">Name</label>
@@ -82,7 +81,7 @@ const MapModel = ({ ROIdata }) => {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <button type="button" className="btn btn-primary" onClick={() => { handleSaveData() }}>Save changes</button>
+              <button type="button" className="btn btn-primary" onClick={() => { handleSaveData() }} disabled={!name || !color}>Save changes</button>
             </div>
           </div>
         </div>
