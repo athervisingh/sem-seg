@@ -32,6 +32,7 @@ const App = () => {
   const [enableROI, setenableROI] = useState(true);
   const [drawControl, setdrawControl] = useState(false);
   const [ROISelection, setROISelection] = useState(null);
+  const [ROISelectionName, setROISelectionName] = useState(null);
   const [classSelection, setclassSelection] = useState(null);
   const [classSelectionName, setclassSelectionName] = useState(null);
   const [geoJsonData, setGeoJsonData] = useState([]);
@@ -47,7 +48,7 @@ const App = () => {
   const [showSegmentButton, setShowSegmentButton] = useState(false);
   const [allLayers, setAllLayers] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [beacon, setBeacon] = useState(()=>{
+  const [beacon, setBeacon] = useState(() => {
     const storedData = localStorage.getItem('tour');
     return storedData ? false : true;
   });
@@ -129,8 +130,11 @@ const App = () => {
   };
 
   const handleROISelection = (e) => {
-    const value = e.target.value;
+    const selectedOption = e.target.options[e.target.selectedIndex];
+    const value = selectedOption.value;
+    const name = selectedOption.getAttribute('name');
     setROISelection(value);
+    setROISelectionName(name)
     value === "-1" ? setenableClasses(false) : setdrawControl(true);
   };
 
@@ -147,10 +151,11 @@ const App = () => {
     const storedData = JSON.parse(localStorage.getItem('roi_data'));
     if (storedData) {
       const newData = Object.keys(storedData).map((ele, index) => (
-        <option key={index} value={storedData[ele] || ""}>{ele}</option>
+        <option key={index} value={storedData[ele] || ""} name={ele}>{ele}</option>
       ));
       setROIdata(newData);
       if (name.length) {
+        setROISelectionName(name);
         const selectedValue = storedData[name];
         setROISelection(selectedValue);
         selectedValue === "-1" ? setenableClasses(false) : setdrawControl(true);
@@ -164,8 +169,11 @@ const App = () => {
       const newData = Object.keys(storedData).map((ele, index) => (
         <option key={index} value={storedData[ele] || ""} name={ele}>{ele}</option>
       ));
+      
       setclassdata(newData);
+
       if (name.length) {
+        setclassSelectionName(name);
         setclassSelection(storedData[name]);
         name === "-1" ? setdrawControl(false) : setdrawControl(true);
       }
@@ -253,53 +261,60 @@ const App = () => {
       handleMaskShow();
       return;
     }
-    try {
-      setLoading(true);
-      setLoadingMask(true);
-      handleMaskShow();
-      const combinedData = {
-        "geojson": geoJsonData,
-        "model": modelSelection,
-        "thresholds": modelThresHold,
-      };
+    const combinedData = {
+      "geojson": geoJsonData,
+      "model": modelSelection,
+      "thresholds": modelThresHold,
+    };
+    console.log(combinedData);
 
-      const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        responseType: "blob",
-      });
-      const blob = response.data;
-      const reader = new FileReader();
+    // try {
+    //   setLoading(true);
+    //   setLoadingMask(true);
+    //   handleMaskShow();
+    //   const combinedData = {
+    //     "geojson": geoJsonData,
+    //     "model": modelSelection,
+    //     "thresholds": modelThresHold,
+    //   };
 
-      reader.onloadend = async () => {
-        const jsonData = reader.result;
-        const maskData = JSON.parse(jsonData);
-        generateMaskFromPixels(maskData);
-      }
-      reader.readAsText(blob);
-      setRequestMask(true);
-      if (allLayers.length) {
-        allLayers.map((ele) => {
-          ele[0].removeLayer(ele[1]);
-        });
+    //   const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
+    //     withCredentials: true,
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     responseType: "blob",
+    //   });
+    //   const blob = response.data;
+    //   const reader = new FileReader();
 
-        setAllLayers([]);
-      }
-      setShowSegmentButton(false);
-      setenableClasses(false);
-      setenableROI(false);
-      setShowImageButton(false);
-      setdrawControl(false);
-    } catch (error) {
-      (error.response && error.response.status === 400) ? alert(`Error: ${error.response.data}`) : alert('An unknown error occurred.');
-      window.location.reload();
-    }
-    finally {
-      setLoadingMask(false);
-      setLoading(false);
-    }
+    //   reader.onloadend = async () => {
+    //     const jsonData = reader.result;
+    //     const maskData = JSON.parse(jsonData);
+    //     generateMaskFromPixels(maskData);
+    //   }
+    //   reader.readAsText(blob);
+    //   setRequestMask(true);
+    //   if (allLayers.length) {
+    //     allLayers.map((ele) => {
+    //       ele[0].removeLayer(ele[1]);
+    //     });
+
+    //     setAllLayers([]);
+    //   }
+    //   setShowSegmentButton(false);
+    //   setenableClasses(false);
+    //   setenableROI(false);
+    //   setShowImageButton(false);
+    //   setdrawControl(false);
+    // } catch (error) {
+    //   (error.response && error.response.status === 400) ? alert(`Error: ${error.response.data}`) : alert('An unknown error occurred.');
+    //   window.location.reload();
+    // }
+    // finally {
+    //   setLoadingMask(false);
+    //   setLoading(false);
+    // }
   };
 
   const handleMaskShow = () => { setShowMask((prev) => !prev); };
@@ -407,7 +422,7 @@ const App = () => {
             geoJsonData={geoJsonData}
             getLayers={getLayers}
             classSelectionName={classSelectionName}
-
+            ROISelectionName={ROISelectionName}
           />
         ) : null}
         <GeoJsonDisplay />

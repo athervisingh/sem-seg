@@ -7,7 +7,7 @@ import 'leaflet-draw';
 
 
 
-const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, setenableClasses , setenableROI, ROISelection, classSelection, setGeoJsonData, geoJsonData, getLayers }) => {
+const DrawControl = ({ ROISelectionName , classSelectionName, onSelectionClick, setdrawControl, setenableClasses , setenableROI, ROISelection, classSelection, setGeoJsonData, geoJsonData, getLayers }) => {
 
     const map = useMap();
     window.type = true;
@@ -38,10 +38,11 @@ const DrawControl = ({ classSelectionName, onSelectionClick, setdrawControl, set
             const geojson = layer.toGeoJSON();
 
             if (ROISelection && ROISelection !== "-1" && !classSelection) {
-                console.log(ROISelection.split(":")[0])
-                console.log(ROISelection.split(":")[1])
-                geojson["properties"]['roi'] = ROISelection.split(":")[0];
-                geojson["properties"]['fill'] = ROISelection.split(":")[1];
+                const storedData = JSON.parse(localStorage.getItem('roi_data'));
+                console.log(ROISelectionName);
+                console.log(storedData[ROISelectionName]);
+                geojson["properties"]['roi'] = ROISelectionName;
+                geojson["properties"]['fill'] = storedData[ROISelectionName];
                 setGeoJsonData(prevData => [...prevData, geojson]);
                 getLayers([drawnItems, layer]);
                 setdrawControl(false);
