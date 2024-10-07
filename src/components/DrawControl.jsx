@@ -40,8 +40,7 @@ const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, s
             const storedData = JSON.parse(localStorage.getItem('roi_data'));
 
             if (ROISelection && ROISelection !== "-1" && !classSelection) {
-                console.log(ROISelectionName);
-                console.log(storedData[ROISelectionName]);
+              
 
                 geojson["properties"]['roi'] = ROISelectionName;
                 geojson["properties"]['fill'] = storedData[ROISelectionName];

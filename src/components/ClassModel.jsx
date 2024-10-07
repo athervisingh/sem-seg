@@ -31,7 +31,7 @@ const ClassModel = ({ getclassdata }) => {
     if (!newName || !newColor) return;
 
     var local_data = JSON.parse(localStorage.getItem('class_data'))
-    console.log(newName)
+  
     if (local_data !== null) {
 
       Object.assign(local_data, {[newName]: newColor})

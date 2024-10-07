@@ -3,10 +3,15 @@ import maps from "../../assets/maps.gif"
 import menuImage from "../../assets/menu.png"
 import closeImage from "../../assets/close.png"
 
-const Slider = ({modelSelection , handleModelChange , ThresholdClass , geoJsonData , modelThresHold }) => {
+const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleModelChange , ThresholdClass , geoJsonData , modelThresHold }) => {
     const [sliderOpen, setSliderOpen] = useState(false);
     const [settingsSelected, setSettingsSelected] = useState(true);
-    
+    const handleBandChange = (e, bandKey) => {
+        setBandValues((prev) => ({
+            ...prev,
+            [bandKey]: e.target.value,
+        }));
+    };
     return (
         <>
             <div onClick={() => setSliderOpen(true)} className={`${sliderOpen ? 'd-none' : 'd-block'} position-absolute bg-white border rounded p-2 cursor-pointer`} style={{ zIndex: "1000", top: "20px", right: "25px" }} >
@@ -38,11 +43,12 @@ const Slider = ({modelSelection , handleModelChange , ThresholdClass , geoJsonDa
                                         onChange={(e) => handleBandChange(e, "band1")}
                                     >
                                         <option value="-1">Band 1</option>
-                                        {[...Array(15)].map((_, index) => (
+                                        {[...Array(12)].map((_, index) => (
                                             <option key={index} value={`B${index + 1}`}>
                                                 B{index + 1}
                                             </option>
                                         ))}
+                                        <option value="B8A">B8A</option>
                                     </select>
                                 </div>
                                 <div className="p-2 bg-white m-3 w-100">
@@ -53,11 +59,12 @@ const Slider = ({modelSelection , handleModelChange , ThresholdClass , geoJsonDa
                                         onChange={(e) => handleBandChange(e, "band2")}
                                     >
                                         <option value="-1">Band 2</option>
-                                        {[...Array(15)].map((_, index) => (
+                                        {[...Array(12)].map((_, index) => (
                                             <option key={index} value={`B${index + 1}`}>
                                                 B{index + 1}
                                             </option>
                                         ))}
+                                        <option value="B8A">B8A</option>
                                     </select>
                                 </div>
                                 <div className="p-2 bg-white m-3 w-100">
@@ -68,11 +75,12 @@ const Slider = ({modelSelection , handleModelChange , ThresholdClass , geoJsonDa
                                         onChange={(e) => handleBandChange(e, "band3")}
                                     >
                                         <option value="-1">Band 3</option>
-                                        {[...Array(15)].map((_, index) => (
+                                        {[...Array(12)].map((_, index) => (
                                             <option key={index} value={`B${index + 1}`}>
                                                 B{index + 1}
                                             </option>
                                         ))}
+                                        <option value="B8A">B8A</option>
                                     </select>
                                 </div>
 
@@ -135,7 +143,7 @@ const Slider = ({modelSelection , handleModelChange , ThresholdClass , geoJsonDa
                                 </div>
                             </div>
                         )}
-                        {console.log("ThresholdClass", ThresholdClass)}
+                    
                         {modelSelection === "Mahalanobis Distance Classifier" &&
                             [...new Set(ThresholdClass)].map((name, index) => {
                                 // Looping through the unique names only once

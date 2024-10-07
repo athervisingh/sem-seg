@@ -36,7 +36,7 @@ const App = () => {
   const [classSelection, setclassSelection] = useState(null);
   const [classSelectionName, setclassSelectionName] = useState(null);
   const [geoJsonData, setGeoJsonData] = useState([]);
-  const [bandValues, setBandValues] = useState({ band1: "B7", band2: "B4", band3: "B2", });
+  const [bandValues, setBandValues] = useState({ band1: "B4", band2: "B3", band3: "B2", });
   const [ThresholdClass, setThresholdClass] = useState([]);
   const MAHALANOBIS_DISTANCE_CLASSIFIER = "Mahalanobis Distance Classifier"
   const [modelSelection, setModelSelection] = useState(MAHALANOBIS_DISTANCE_CLASSIFIER);
@@ -109,7 +109,7 @@ const App = () => {
         opacity: parseFloat(imageData[name].opacity + value),
       },
     }));
-    console.log(imageData[name].opacity + value);
+ 
   };
 
   const handleModelChange = (e) => {
@@ -124,8 +124,6 @@ const App = () => {
       });
     } else if (modelSelection === "Maximum Likelyhood Classifier") {
       setModelThresHold("1");
-    } else {
-      setThresholdClass([]);
     }
   };
 
@@ -222,6 +220,7 @@ const App = () => {
             "Content-Type": "application/json",
           },
           responseType: "blob",
+          timeout: 300000,
         }
       );
 
@@ -266,7 +265,7 @@ const App = () => {
       "model": modelSelection,
       "thresholds": modelThresHold,
     };
-    console.log(combinedData);
+ 
 
     try {
       setLoading(true);
@@ -284,6 +283,7 @@ const App = () => {
           "Content-Type": "application/json",
         },
         responseType: "blob",
+        timeout: 300000,
       });
       const blob = response.data;
       const reader = new FileReader();
@@ -307,8 +307,14 @@ const App = () => {
       setenableROI(false);
       setShowImageButton(false);
       setdrawControl(false);
-    } catch (error) {
-      (error.response && error.response.status === 400) ? alert(`Error: ${error.response.data}`) : alert('An unknown error occurred.');
+    }  catch (error) {
+      if (error.response && error.response.status === 400) {
+        const blobError = error.response.data;
+        const errorMsg = await blobError.text();
+        alert(`Error : ${errorMsg}`);
+      } else {
+        alert('An unknown error occurred.');
+      }
       window.location.reload();
     }
     finally {
@@ -356,7 +362,7 @@ const App = () => {
       {loading ? (<Loading />) : null}
 
       {/* HAMBURGER SLIDER */}
-      <Slider modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
+      <Slider setModelThresHold={setModelThresHold} setBandValues={setBandValues} modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
 
       {/* Image Segment Reload */}
       <UtilityButtons ROIdisabled={!ROISelection} classdisabled={!classSelection} showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} />
@@ -426,7 +432,6 @@ const App = () => {
             ROISelectionName={ROISelectionName}
           />
         ) : null}
-        <GeoJsonDisplay />
         <div className="p-10 absolute bottom-9 right-8" data-tour="scale-component">
           <ScaleControl />
         </div>

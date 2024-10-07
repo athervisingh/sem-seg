@@ -32,7 +32,7 @@ const MapModel = ({ ROIdata }) => {
     if (!newName || !newColor) return;
 
     var local_data = JSON.parse(localStorage.getItem('roi_data'))
-    console.log(newName)
+ 
     if (local_data !== null) {
       Object.assign(local_data, {[newName]: newColor});
     }

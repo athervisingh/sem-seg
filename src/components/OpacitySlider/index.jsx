@@ -51,6 +51,10 @@ const StyledSlider = styled.input`
 `;
 
 const OpacitySlider = ({ opacitySlider, imageData, handleSliderChange, setIsDraggingSlider }) => {
+  const handleSliderInputChange = (name) => (e) => {
+    const newValue = parseFloat(e.target.value);
+    handleSliderChange(name, newValue - imageData[name].opacity);
+  };
   return (
     <>
       {opacitySlider && (
@@ -65,6 +69,7 @@ const OpacitySlider = ({ opacitySlider, imageData, handleSliderChange, setIsDrag
                 max="1"
                 step="0.1"
                 value={imageData[name].opacity}
+                onChange={handleSliderInputChange(name)}
               />
               <button className='btn btn-sm rounded-circle btn-primary ' onClick={handleSliderChange(name, 0.1)} disabled={imageData[name].opacity >= 1}>+</button>
             </div>
