@@ -268,53 +268,53 @@ const App = () => {
     };
     console.log(combinedData);
 
-    // try {
-    //   setLoading(true);
-    //   setLoadingMask(true);
-    //   handleMaskShow();
-    //   const combinedData = {
-    //     "geojson": geoJsonData,
-    //     "model": modelSelection,
-    //     "thresholds": modelThresHold,
-    //   };
+    try {
+      setLoading(true);
+      setLoadingMask(true);
+      handleMaskShow();
+      const combinedData = {
+        "geojson": geoJsonData,
+        "model": modelSelection,
+        "thresholds": modelThresHold,
+      };
 
-    //   const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
-    //     withCredentials: true,
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     responseType: "blob",
-    //   });
-    //   const blob = response.data;
-    //   const reader = new FileReader();
+      const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        responseType: "blob",
+      });
+      const blob = response.data;
+      const reader = new FileReader();
 
-    //   reader.onloadend = async () => {
-    //     const jsonData = reader.result;
-    //     const maskData = JSON.parse(jsonData);
-    //     generateMaskFromPixels(maskData);
-    //   }
-    //   reader.readAsText(blob);
-    //   setRequestMask(true);
-    //   if (allLayers.length) {
-    //     allLayers.map((ele) => {
-    //       ele[0].removeLayer(ele[1]);
-    //     });
+      reader.onloadend = async () => {
+        const jsonData = reader.result;
+        const maskData = JSON.parse(jsonData);
+        generateMaskFromPixels(maskData);
+      }
+      reader.readAsText(blob);
+      setRequestMask(true);
+      if (allLayers.length) {
+        allLayers.map((ele) => {
+          ele[0].removeLayer(ele[1]);
+        });
 
-    //     setAllLayers([]);
-    //   }
-    //   setShowSegmentButton(false);
-    //   setenableClasses(false);
-    //   setenableROI(false);
-    //   setShowImageButton(false);
-    //   setdrawControl(false);
-    // } catch (error) {
-    //   (error.response && error.response.status === 400) ? alert(`Error: ${error.response.data}`) : alert('An unknown error occurred.');
-    //   window.location.reload();
-    // }
-    // finally {
-    //   setLoadingMask(false);
-    //   setLoading(false);
-    // }
+        setAllLayers([]);
+      }
+      setShowSegmentButton(false);
+      setenableClasses(false);
+      setenableROI(false);
+      setShowImageButton(false);
+      setdrawControl(false);
+    } catch (error) {
+      (error.response && error.response.status === 400) ? alert(`Error: ${error.response.data}`) : alert('An unknown error occurred.');
+      window.location.reload();
+    }
+    finally {
+      setLoadingMask(false);
+      setLoading(false);
+    }
   };
 
   const handleMaskShow = () => { setShowMask((prev) => !prev); };
@@ -366,6 +366,7 @@ const App = () => {
         zoom={4}
         dragging={!isDraggingSlider}
         style={{ height: "100vh", width: "100%", zIndex: "1" }}
+        doubleClickZoom= {false}
       >
         <LayersControl data-tour="satellite-btn" position="bottomright">
           <LayersControl.BaseLayer name="Simple Map">
