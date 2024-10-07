@@ -42,14 +42,15 @@ const App = () => {
   const [isDraggingSlider, setIsDraggingSlider] = useState(false);
   const [modelThresHold, setModelThresHold] = useState('1');
   const [opacitySlider, setOpacitySlider] = useState(false);
-  const [runTour, setRunTour] = useState(() => {
-    if(localStorage.getItem("tour") === null) return true;
-    else return false;
-  });
   const [showImageButton, setShowImageButton] = useState(true);
+  const [runTour, setRunTour] = useState(true);
   const [showSegmentButton, setShowSegmentButton] = useState(false);
   const [allLayers, setAllLayers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [beacon, setBeacon] = useState(()=>{
+    const storedData = localStorage.getItem('tour');
+    return storedData ? false : true;
+  });
 
   const [class_Data, setClass_Data] = useState(() => {
     const storedData = localStorage.getItem('class_data');
@@ -65,6 +66,7 @@ const App = () => {
     {
       target: 'body', // Global target for the welcome message
       content: 'Welcome to Sementic Segmentation of satellite imagery! This tool allows users to perform interactive semantic segmentation on satellite imagery using WMS services while leveraging on-device GPU/NPU for enhanced performance.',
+      disableBeacon: beacon
     },
     {
       target: '[data-tour="roi-dropdown"]', // Select by attribute
@@ -98,7 +100,7 @@ const App = () => {
     },
   ];
 
-  const handleSliderChange = (name , value) => () => {
+  const handleSliderChange = (name, value) => () => {
     setImageData(prev => ({
       ...prev,
       [name]: {
