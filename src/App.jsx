@@ -75,16 +75,11 @@ const App = () => {
 
     {
       target: '[data-tour="get-image"]',
-      content: 'Click the "Image" button to load the satellite imagery for your selected ROI.',
+      content: 'Click the "Image" button to load the satellite imagery for your selected ROI Or Click Segment to load the mask or segmented image on the screen. ',
     },
     {
       target: '[data-tour="class-dropdown"]',
       content: 'Select the class/feature you want to extract or segment, such as urban areas, forests, or rivers.',
-    },
-
-    {
-      target: '[data-tour="get-mask"]',
-      content: 'Click Segment to load the mask or segmented image on the screen.',
     },
     {
       target: '[data-tour="reload-btn"]', // Assuming you have a reload button
@@ -393,10 +388,10 @@ const App = () => {
           <div className="" data-tour="search-bar"><SearchComponent /></div>
 
           {/* ROI Dropdown */}
-          <DropDowns dataTour={"roi dropdown"} enable={enableROI} value={ROISelection} handleChange={handleROISelection} heading={"Region of Interest"} data={ROIdata} modal={"#exampleModal"} getData={getROIdata} />
+          <DropDowns dataTour={"roi-dropdown"} enable={enableROI} value={ROISelection} handleChange={handleROISelection} heading={"Region of Interest"} data={ROIdata} modal={"#exampleModal"} getData={getROIdata} />
 
           {/* Classes Dropdown */}
-          <DropDowns dataTour={"class dropdown"} enable={enableClasses} value={classSelection} handleChange={handleClassSelection} heading={"Classes"} data={classdata} modal={"#classModel"} getData={getclassdata} />
+          <DropDowns dataTour={"class-dropdown"} enable={enableClasses} value={classSelection} handleChange={handleClassSelection} heading={"Classes"} data={classdata} modal={"#classModel"} getData={getclassdata} />
 
           <div className={showMask ? 'z-[1000] cursor-pointer w-[178px] bg-white h-9 text-center font-bold text-xs border border-black rounded-lg ' : 'hidden'}>
 

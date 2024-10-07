@@ -26,7 +26,6 @@ const UtilityButtons = ({showImageButton , sendGeoJsonData , sendMaskData , load
 
             {showSegmentButton && <div className="p-2 w-36">
                 <button
-                    data-tour="get-mask"
                     type="button"
                     onClick={sendMaskData}
                     className="w-100 cursor-pointer p-1 px-3 d-flex gap-3 align-items-center text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm border border-black"
