@@ -3,7 +3,6 @@ import { useEffect, useState, useCallback } from "react";
 import { MapContainer, TileLayer, LayersControl, ImageOverlay, } from "react-leaflet";
 import Joyride from "react-joyride";
 import DrawControl from "./components/DrawControl";
-import GeoJsonDisplay from "./components/GeoJsonDisplay";
 import "leaflet/dist/leaflet.css";
 import SearchComponent from "./components/SearchComponent";
 import ScaleControl from "./components/ScaleControl";
