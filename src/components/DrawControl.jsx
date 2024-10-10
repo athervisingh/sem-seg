@@ -19,7 +19,6 @@ const DrawControl = ({setImageButtonDisabled , setSegmentButtonDisabled , ROISel
         const drawControl = new Leaf.Control.Draw({
             edit: {
                 featureGroup: drawnItems,
-                remove: true ,
             },
             draw: {
                 polygon: true,
@@ -84,33 +83,14 @@ const DrawControl = ({setImageButtonDisabled , setSegmentButtonDisabled , ROISel
         };
 
 
-        const onEdit = (event) => {
-            const layers = event.layers;
-            layers.eachLayer(layer => {
-                const updatedGeojson = layer.toGeoJSON();
-                // Update geoJsonData accordingly or handle updates here
-            });
-            console.log('Layers edited:', event.layers);
-        };
-
-        const onDelete = (event) => {
-            const layers = event.layers;
-            layers.eachLayer(layer => {
-                // You can handle deletion here
-                // For example, remove the geoJson data associated with this layer
-                console.log('Layer deleted:', layer);
-            });
-        };
+    
 
 
         map.on(Leaf.Draw.Event.CREATED, onCreate);
-        map.on(Leaf.Draw.Event.EDITED, onEdit);  // Attach the edit handler
-        map.on(Leaf.Draw.Event.DELETED, onDelete); 
+      
 
         return () => {
             map.off(Leaf.Draw.Event.CREATED, onCreate);
-            map.off(Leaf.Draw.Event.EDITED, onEdit);  // Remove edit handler
-            map.off(Leaf.Draw.Event.DELETED, onDelete);  
             map.removeControl(drawControl);
         };
     }, [map, onSelectionClick, ROISelection, classSelection, setdrawControl, setenableClasses, geoJsonData, setGeoJsonData]);

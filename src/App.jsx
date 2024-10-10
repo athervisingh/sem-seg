@@ -321,7 +321,6 @@ const App = () => {
         "model": modelSelection,
         "thresholds": modelThresHold,
       };
-console.log("mask",combinedData)
       const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
         withCredentials: true,
         headers: {
