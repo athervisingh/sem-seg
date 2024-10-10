@@ -10,7 +10,7 @@ const DropDowns = ({ dataTour, enable, value, handleChange, heading, data, modal
             style={{ zIndex: "1000", top: "10px", minWidth: '280px' }}
         >
             <select
-                className="form-select form-select w-100 border rounded border-black w-full"
+                className={`form-select form-select w-100 border rounded border-black w-full ${!enable ? 'cursor-not-allowed opacity-70':'cursor-pointer opacity-100'}`}
                 aria-label="Default select example"
                 disabled={!enable}
                 value={value || ""}
@@ -27,14 +27,14 @@ const DropDowns = ({ dataTour, enable, value, handleChange, heading, data, modal
                 <button
                     disabled={!enable}
                     type="button"
-                    className="btn btn-primary w-100"
+                    className={`btn btn-primary w-100 ${!enable ? 'cursor-not-allowed opacity-70' : 'cursor-pointer opacity-100'}`}
                     data-bs-toggle="modal"
                     data-bs-target={modal}
                 >
                     New
                 </button>
             </div>
-            {heading === "Classes" ? <ClassModel getclassdata={getData} /> : <MapModel ROIdata={getData} />}
+            {heading === "Classes" ? <ClassModel data={data} getclassdata={getData} /> : <MapModel ROIdata={getData} />}
         </div>
     )
 }

@@ -2,18 +2,69 @@ import React, { useState } from 'react'
 import maps from "../../assets/maps.gif"
 import menuImage from "../../assets/menu.png"
 import closeImage from "../../assets/close.png"
-
-const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleModelChange , ThresholdClass , geoJsonData , modelThresHold }) => {
+import { useEffect } from 'react'
+import DatePicker from 'react-datepicker'; // Import the DatePicker component
+import 'react-datepicker/dist/react-datepicker.css';
+import { FiCopy } from 'react-icons/fi';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Bounce } from 'react-toastify'
+const Slider = ({ modelSelection, setModelThresHold, setBandValues, handleModelChange, ThresholdClass, geoJsonData, modelThresHold }) => {
     const [sliderOpen, setSliderOpen] = useState(false);
     const [settingsSelected, setSettingsSelected] = useState(true);
+    const [selectedDate, setSelectedDate] = useState(null);
     const handleBandChange = (e, bandKey) => {
         setBandValues((prev) => ({
             ...prev,
             [bandKey]: e.target.value,
         }));
     };
+
+
+    const [accumulatedData, setAccumulatedData] = useState([]);
+    const handleCopy = () => {
+        const dataToCopy = JSON.stringify(accumulatedData, null, 2); // Convert to string
+        navigator.clipboard.writeText(dataToCopy)
+            .then(() => {
+                toast.info('Data copied to clipboard!', {
+                    position: "top-left",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
+            })
+            .catch(err => {
+                console.error("Failed to copy:", err);
+            });
+    };
+    // useEffect to append new data to the accumulatedData whenever geoJsonData changes
+    useEffect(() => {
+        // Only append if geoJsonData has valid data
+        if (geoJsonData && Object.keys(geoJsonData).length > 0) {
+            setAccumulatedData(prevData => [...prevData, geoJsonData]); // Appending new data
+        }
+    }, [geoJsonData]);
     return (
         <>
+            <ToastContainer
+                position="top-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                theme="light"
+                transition:Bounce
+            />
+
             <div onClick={() => setSliderOpen(true)} className={`${sliderOpen ? 'd-none' : 'd-block'} position-absolute bg-white border rounded p-2 cursor-pointer`} style={{ zIndex: "1000", top: "20px", right: "25px" }} >
                 <img src={menuImage} alt="..." width={20} />
             </div>
@@ -89,6 +140,20 @@ const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleMod
                         </div>
 
                         <div className="rounded-lg">
+                            <h1 className="text-xl pt-4 pl-5">Select Date</h1>
+                            <div className="p-2 bg-white m-3">
+                                <DatePicker
+                                    selected={selectedDate}
+                                    onChange={(date) => setSelectedDate(date)}
+                                    dateFormat="yyyy-MM-dd"
+                                    className="form-control"
+                                    placeholderText="YYYY-MM-DD"
+                                />
+                            </div>
+                        </div>
+
+
+                        <div className="rounded-lg">
                             <h1 className="text-xl pt-4 pl-5">Model</h1>
                             <div className="p-2 bg-white m-3">
                                 <select
@@ -130,7 +195,17 @@ const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleMod
                                                 setModelThresHold("1")
                                             }
                                             if (isNaN(value)) {
-                                                alert("Please enter a numeric value");
+                                                toast.error('Please enter a numeric value', {
+                                                    position: "top-left",
+                                                    autoClose: 3000,
+                                                    hideProgressBar: false,
+                                                    closeOnClick: true,
+                                                    pauseOnHover: true,
+                                                    draggable: true,
+                                                    progress: undefined,
+                                                    theme: "colored",
+                                                    transition: Bounce,
+                                                });
                                             } else {
                                                 setModelThresHold(() => {
                                                     return (
@@ -143,7 +218,7 @@ const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleMod
                                 </div>
                             </div>
                         )}
-                    
+
                         {modelSelection === "Mahalanobis Distance Classifier" &&
                             [...new Set(ThresholdClass)].map((name, index) => {
                                 // Looping through the unique names only once
@@ -159,7 +234,17 @@ const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleMod
                                                 onChange={(e) => {
                                                     const value = e.target.value;
                                                     if (isNaN(value)) {
-                                                        alert("Please enter a numeric value");
+                                                        toast.error('Please enter a numeric value', {
+                                                            position: "top-left",
+                                                            autoClose: 3000,
+                                                            hideProgressBar: false,
+                                                            closeOnClick: true,
+                                                            pauseOnHover: true,
+                                                            draggable: true,
+                                                            progress: undefined,
+                                                            theme: "colored",
+                                                            transition: Bounce,
+                                                        });
                                                     } else {
                                                         setModelThresHold((prev) => ({
                                                             ...prev,
@@ -177,10 +262,17 @@ const Slider = ({ modelSelection , setModelThresHold , setBandValues , handleMod
                     </>}
 
                     {!settingsSelected && (
-                        <div className="p-10 bg-gray-50 border rounded-lg shadow-lg">
-                            {geoJsonData ? (
-                                <pre className="text-2xl flex justify-center text-gray-800 p-4 bg-gray-100 rounded overflow-auto">
-                                    <code className="whitespace-pre-wrap">{JSON.stringify(geoJsonData, null, 2)}</code>
+                        <div className="p-4 bg-gray-50 border rounded-lg shadow-lg">
+                            <div className="flex justify-end">
+                                <FiCopy
+                                    onClick={handleCopy}
+                                    className="text-3xl text-blue-500 cursor-pointer hover:text-blue-600"
+                                    title="Copy Data"
+                                />
+                            </div>
+                            {accumulatedData.length > 0 ? (
+                                <pre className="text-2xl flex justify-center text-gray-800 p-4 mt-2 rounded-lg bg-gray-100 overflow-auto">
+                                    <code className="whitespace-pre-wrap">{JSON.stringify(accumulatedData, null, 2)}</code>
                                 </pre>
                             ) : (
                                 <div className="text-gray-500 text-center">No data available</div>

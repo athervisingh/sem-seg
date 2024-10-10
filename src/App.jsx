@@ -13,6 +13,10 @@ import Slider from "./components/Slider";
 import UtilityButtons from "./components/UtilityButtons";
 import DropDowns from "./components/Dropdowns";
 import ImageOverlays from "./components/ImageOverlays";
+import toggleGif from "./assets/toggle.gif"
+import classGif from "./assets/class.gif"
+import roiGif from "./assets/roi.gif"
+import advancedGif from "./assets/advanced.gif"
 import OpacitySlider from "./components/OpacitySlider";
 
 const App = () => {
@@ -70,7 +74,17 @@ const App = () => {
     },
     {
       target: '[data-tour="roi-dropdown"]', // Select by attribute
-      content: 'Start by selecting a Region of Interest (ROI). Begin your analysis by choosing the area you want to focus on.',
+      content: 
+      (
+        <div>
+            <p>Start by selection a Region of Interest. Begin your analysis by marking the area you want to focus with one of the draw tools. <br /> <b>Make sure to choose the scale less than or equals to 5 Km</b></p>
+          <img
+              src={roiGif}
+              alt="Step 2 GIF"
+            style={{ width: '100%', height: 'auto' }}
+          />
+        </div>
+      ),
     },
 
     {
@@ -79,7 +93,17 @@ const App = () => {
     },
     {
       target: '[data-tour="class-dropdown"]',
-      content: 'Select the class/feature you want to extract or segment, such as urban areas, forests, or rivers.',
+      content: 
+      (
+        <div>
+          <p>Select the class/feature you want to extract or segment, such as urban areas, forests, or rivers.</p>
+          <img
+            src={classGif}
+            alt="Step 2 GIF"
+            style={{ width: '100%', height: 'auto' }}
+          />
+        </div>
+      ),
     },
     {
       target: '[data-tour="reload-btn"]', // Assuming you have a reload button
@@ -87,11 +111,36 @@ const App = () => {
     },
     {
       target: '[data-tour="scale-component"]', // Assuming you have a scale selection component
-      content: 'For best results make selection between the scale of 2-3 km. You can toggle between satellite and street map accordingly.',
+      content:
+      (
+        <div>
+          <p>For best results make selection less than or equal to 5km. <br /> You can toggle between the satellite map and the street map according to your requirements</p>
+          <img
+            src={toggleGif}
+            alt="Step 2 GIF"
+            style={{ width: '100%', height: 'auto' }}
+          />
+        </div>
+      ),
+
     },
     {
       target: '[data-tour="search-bar"]', // For the search bar
       content: 'Use the search bar to quickly find specific locations or features within the satellite imagery.',
+    },
+    {
+      target: '[data-tour="Humburger"]', // For the search bar
+      content: (
+        <div>
+          <p>This is the advanced section, you can select the bands, models and adjust the thresholds
+            Also you can export geojson for the selected features</p>
+          <img
+            src={advancedGif}
+            alt="Step 2 GIF"
+            style={{ width: '100%', height: 'auto' }}
+          />
+        </div>
+      ),
     },
   ];
 
@@ -270,7 +319,7 @@ const App = () => {
         "model": modelSelection,
         "thresholds": modelThresHold,
       };
-
+console.log("mask",combinedData)
       const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
         withCredentials: true,
         headers: {
@@ -352,7 +401,7 @@ const App = () => {
           }}
         />
       </div>
-
+      <div className="z-[1000] absolute right-4 w-20 h-20" data-tour="Humburger"></div>
       {loading ? (<Loading />) : null}
 
       {/* HAMBURGER SLIDER */}

@@ -16,7 +16,7 @@ const colorOptions = [
   { label: 'Gray', value: '#808080' },
 ];
 
-const ClassModel = ({ getclassdata }) => {
+const ClassModel = ({ getclassdata , data }) => {
   const [name, setName] = useState("");
   const [color, setColor] = useState("");
   const modalRef = useRef(null);
@@ -24,7 +24,7 @@ const ClassModel = ({ getclassdata }) => {
   const handleSaveData = () => {
     const newName = name.trim();
     const newColor = color;
-
+console.log(data)
     setName("");
     setColor("");
 
@@ -46,7 +46,7 @@ const ClassModel = ({ getclassdata }) => {
 
     getclassdata(newName);
   }
-
+  const dataColors = data.map(item => item.props.value);
   return (
     <div className=''>
       <div className="modal fade" ref={modalRef} data-bs-backdrop="false" id="classModel" tabIndex="-1" aria-labelledby="classModelLabel" aria-hidden="true">
@@ -72,7 +72,8 @@ const ClassModel = ({ getclassdata }) => {
                 <div className="mb-3">
                   <label htmlFor="color" className="form-label">Color</label>
                   <div className="grid grid-cols-4 gap-2">
-                    {colorOptions.map((option) => (
+                    {colorOptions.filter(option => !dataColors.includes(option.value)).map((option) => (
+                      
                       <button
                         key={option.value}
                         type="button"

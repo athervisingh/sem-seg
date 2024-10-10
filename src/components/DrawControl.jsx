@@ -26,7 +26,7 @@ const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, s
                 polyline: false,
                 rectangle: true,
                 marker: false,
-                circle: true,
+                circle: false,
                 circlemarker: false,
             },
         });

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { useMap } from 'react-leaflet';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Bounce } from 'react-toastify'
 
 
 const SearchComponent = () => {
@@ -24,15 +27,50 @@ const SearchComponent = () => {
                 const { lat, lon } = data[0];
                 map.setView([parseFloat(lat), parseFloat(lon)], 13); // Move the map to the searched location
             } else {
-                alert('Location not found.');
+                toast.error('Location not found.', {
+                    position: "top-center",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                    theme: "colored",
+                    transition: Bounce,
+                });
             }
         } catch (error) {
             console.error('Error fetching location:', error);
-            alert('An error occurred while searching for the location.');
+            
+            toast.error('An error occurred while searching for the location.', {
+                position: "top-center",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "colored",
+                transition: Bounce,
+            });
         }
     };
 
-    return (
+    return (<>
+        <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            transition:Bounce
+        />
+
         <form onSubmit={handleSearch} className="flex gap-3">
             <input
                 type="text"
@@ -48,6 +86,10 @@ const SearchComponent = () => {
                 Search
             </button>
         </form>
+
+
+    </>
+
     );
 };
 
