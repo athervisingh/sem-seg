@@ -7,7 +7,7 @@ import 'leaflet-draw';
 
 
 
-const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, setdrawControl, setenableClasses, setenableROI, ROISelection, classSelection, setGeoJsonData, geoJsonData, getLayers }) => {
+const DrawControl = ({setImageButtonDisabled , setSegmentButtonDisabled , ROISelectionName, classSelectionName, onSelectionClick, setdrawControl, setenableClasses, setenableROI, ROISelection, classSelection, setGeoJsonData, geoJsonData, getLayers }) => {
 
     const map = useMap();
     window.type = true;
@@ -19,7 +19,7 @@ const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, s
         const drawControl = new Leaf.Control.Draw({
             edit: {
                 featureGroup: drawnItems,
-
+                remove: true ,
             },
             draw: {
                 polygon: true,
@@ -55,6 +55,7 @@ const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, s
                 setGeoJsonData(prevData => [...prevData, geojson]);
                 getLayers([drawnItems, layer]);
                 setdrawControl(false);
+                setImageButtonDisabled(false);
 
             } else if (classSelection && classSelection !== "-1" && ROISelection && ROISelection !== "-1") {
                 geojson["properties"]['class'] = classSelectionName;
@@ -69,8 +70,8 @@ const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, s
 
                 setGeoJsonData(prevData => [...prevData, geojson]);
                 getLayers([drawnItems, layer]);
+                setSegmentButtonDisabled(false);
             }
-
             setenableROI(false);
 
             if (layer && onSelectionClick && ROISelection && ROISelection !== "-1" && !classSelection) {
@@ -82,10 +83,34 @@ const DrawControl = ({ ROISelectionName, classSelectionName, onSelectionClick, s
             }
         };
 
+
+        const onEdit = (event) => {
+            const layers = event.layers;
+            layers.eachLayer(layer => {
+                const updatedGeojson = layer.toGeoJSON();
+                // Update geoJsonData accordingly or handle updates here
+            });
+            console.log('Layers edited:', event.layers);
+        };
+
+        const onDelete = (event) => {
+            const layers = event.layers;
+            layers.eachLayer(layer => {
+                // You can handle deletion here
+                // For example, remove the geoJson data associated with this layer
+                console.log('Layer deleted:', layer);
+            });
+        };
+
+
         map.on(Leaf.Draw.Event.CREATED, onCreate);
+        map.on(Leaf.Draw.Event.EDITED, onEdit);  // Attach the edit handler
+        map.on(Leaf.Draw.Event.DELETED, onDelete); 
 
         return () => {
             map.off(Leaf.Draw.Event.CREATED, onCreate);
+            map.off(Leaf.Draw.Event.EDITED, onEdit);  // Remove edit handler
+            map.off(Leaf.Draw.Event.DELETED, onDelete);  
             map.removeControl(drawControl);
         };
     }, [map, onSelectionClick, ROISelection, classSelection, setdrawControl, setenableClasses, geoJsonData, setGeoJsonData]);

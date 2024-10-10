@@ -26,6 +26,8 @@ const App = () => {
   const [requestMask, setRequestMask] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
   const [imageData, setImageData] = useState({});
+  const [imageButtonDisabled, setImageButtonDisabled] = useState(true);
+  const [segmentButtonDisabled, setSegmentButtonDisabled] = useState(true);
   const [showMask, setShowMask] = useState(null);
   const [imageBounds, setImageBounds] = useState(null);
   const [showImage, setShowImage] = useState(false);
@@ -408,7 +410,7 @@ console.log("mask",combinedData)
       <Slider setModelThresHold={setModelThresHold} setBandValues={setBandValues} modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
 
       {/* Image Segment Reload */}
-      <UtilityButtons ROIdisabled={!ROISelection} classdisabled={!classSelection} showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} />
+      <UtilityButtons ROIdisabled={!ROISelection} classdisabled={!classSelection} showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} imageButtonDisabled={imageButtonDisabled} segmentButtonDisabled={segmentButtonDisabled} />
 
       <MapContainer
         center={[28.6139, 77.209]}
@@ -473,6 +475,8 @@ console.log("mask",combinedData)
             getLayers={getLayers}
             classSelectionName={classSelectionName}
             ROISelectionName={ROISelectionName}
+            setImageButtonDisabled={setImageButtonDisabled}
+            setSegmentButtonDisabled={setSegmentButtonDisabled}
           />
         ) : null}
         <div className="p-10 absolute bottom-9 right-8" data-tour="scale-component">
