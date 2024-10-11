@@ -29,6 +29,7 @@ const App = () => {
   const [imageButtonDisabled, setImageButtonDisabled] = useState(true);
   const [segmentButtonDisabled, setSegmentButtonDisabled] = useState(true);
   const [showMask, setShowMask] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [imageBounds, setImageBounds] = useState(null);
   const [showImage, setShowImage] = useState(false);
   const [ROIdata, setROIdata] = useState([]);
@@ -254,7 +255,9 @@ const App = () => {
       const combinedData = {
         "geojson": geoJsonData,
         "bands": bandValues,
+        "date": selectedDate,
       };
+      console.log("data",combinedData)
 
       const response = await axios.post(
         "https://khaleeque.in/get_gee_image",
@@ -406,7 +409,7 @@ const App = () => {
       {loading ? (<Loading />) : null}
 
       {/* HAMBURGER SLIDER */}
-      <Slider setModelThresHold={setModelThresHold} setBandValues={setBandValues} modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
+      <Slider setModelThresHold={setModelThresHold} setBandValues={setBandValues} setSelectedDate={setSelectedDate} selectedDate={selectedDate} modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
 
       {/* Image Segment Reload */}
       <UtilityButtons ROIdisabled={!ROISelection} classdisabled={!classSelection} showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} imageButtonDisabled={imageButtonDisabled} segmentButtonDisabled={segmentButtonDisabled} />
@@ -428,7 +431,7 @@ const App = () => {
 
           <LayersControl.BaseLayer checked name="Satellite Map">
             <TileLayer
-              url="https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=fIYt5qeKuBJ66khalaCH"
+              url="https://api.maptiler.com/maps/hybrid/{z}/{x}/{y}.jpg?key=QqTSNEE2UIK0e5wGBlP6"
               attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
           </LayersControl.BaseLayer>

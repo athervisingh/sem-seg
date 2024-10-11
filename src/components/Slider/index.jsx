@@ -9,10 +9,26 @@ import { FiCopy } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bounce } from 'react-toastify'
-const Slider = ({ modelSelection, setModelThresHold, setBandValues, handleModelChange, ThresholdClass, geoJsonData, modelThresHold }) => {
+const Slider = ({ modelSelection, setModelThresHold , setSelectedDate , selectedDate , setBandValues, handleModelChange, ThresholdClass, geoJsonData, modelThresHold }) => {
     const [sliderOpen, setSliderOpen] = useState(false);
     const [settingsSelected, setSettingsSelected] = useState(true);
-    const [selectedDate, setSelectedDate] = useState(null);
+    const [error, setError] = useState('');
+
+    const handleDateChange = (date) => {
+        const formattedDate = date ? date.toISOString().split('T')[0] : '';
+
+        // Regular expression to validate the format: yyyy-mm-dd
+        const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+
+        if (date && !datePattern.test(formattedDate)) {
+            setError('Invalid date format. Please use YYYY-MM-DD.');
+        } else {
+            setError(''); // Clear the error
+            setSelectedDate(formattedDate); // Set the valid date
+        }
+    };
+
+
     const handleBandChange = (e, bandKey) => {
         setBandValues((prev) => ({
             ...prev,
@@ -143,12 +159,17 @@ const Slider = ({ modelSelection, setModelThresHold, setBandValues, handleModelC
                             <h1 className="text-xl pt-4 pl-5">Select Date</h1>
                             <div className="p-2 bg-white m-3">
                                 <DatePicker
-                                    selected={selectedDate}
-                                    onChange={(date) => setSelectedDate(date)}
+                                    selected={selectedDate ? new Date(selectedDate) : null}
+                                    onChange={(date) => handleDateChange(date)}
                                     dateFormat="yyyy-MM-dd"
                                     className="form-control"
                                     placeholderText="YYYY-MM-DD"
+                                    showYearDropdown
+                                    showMonthDropdown
+                                    dropdownMode="select"
+                                    maxDate={new Date()} 
                                 />
+                                {error && <p className="text-red-500">{error}</p>}
                             </div>
                         </div>
 
