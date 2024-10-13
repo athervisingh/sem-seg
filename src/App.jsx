@@ -51,9 +51,9 @@ const App = () => {
   const [opacitySlider, setOpacitySlider] = useState(false);
   const [showImageButton, setShowImageButton] = useState(true);
   const [runTour, setRunTour] = useState(true);
-  const [showSegmentButton, setShowSegmentButton] = useState(false);
   const [allLayers, setAllLayers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showSegmentButton, setShowSegmentButton] = useState(false);
   const [beacon, setBeacon] = useState(() => {
     const storedData = localStorage.getItem('tour');
     return storedData ? false : true;
