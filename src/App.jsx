@@ -59,6 +59,18 @@ const App = () => {
     return storedData ? false : true;
   });
 
+  useEffect(() => {
+    const storedData = localStorage.getItem('tour');
+
+    if (!storedData || storedData === 'false') {
+      console.log("sdsd")
+      axios.get('https://khaleeque.in/set_ip', {
+      })
+    }
+    
+  }, [])
+  
+
   const [class_Data, setClass_Data] = useState(() => {
     const storedData = localStorage.getItem('class_data');
     return storedData ? JSON.parse(storedData) : {};

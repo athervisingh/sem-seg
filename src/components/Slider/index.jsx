@@ -9,6 +9,7 @@ import { FiCopy } from 'react-icons/fi';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Bounce } from 'react-toastify'
+
 const Slider = ({ modelSelection, setModelThresHold , setSelectedDate , selectedDate , setBandValues, handleModelChange, ThresholdClass, geoJsonData, modelThresHold }) => {
     const [sliderOpen, setSliderOpen] = useState(false);
     const [settingsSelected, setSettingsSelected] = useState(true);
@@ -37,9 +38,9 @@ const Slider = ({ modelSelection, setModelThresHold , setSelectedDate , selected
     };
 
 
-    const [accumulatedData, setAccumulatedData] = useState([]);
+  
     const handleCopy = () => {
-        const dataToCopy = JSON.stringify(accumulatedData, null, 2); // Convert to string
+        const dataToCopy = JSON.stringify(geoJsonData, null, 2); // Convert to string
         navigator.clipboard.writeText(dataToCopy)
             .then(() => {
                 toast.info('Data copied to clipboard!', {
@@ -58,13 +59,8 @@ const Slider = ({ modelSelection, setModelThresHold , setSelectedDate , selected
                 console.error("Failed to copy:", err);
             });
     };
-    // useEffect to append new data to the accumulatedData whenever geoJsonData changes
-    useEffect(() => {
-        // Only append if geoJsonData has valid data
-        if (geoJsonData && Object.keys(geoJsonData).length > 0) {
-            setAccumulatedData(prevData => [...prevData, geoJsonData]); // Appending new data
-        }
-    }, [geoJsonData]);
+   
+
     return (
         <>
             <ToastContainer
@@ -291,9 +287,9 @@ const Slider = ({ modelSelection, setModelThresHold , setSelectedDate , selected
                                     title="Copy Data"
                                 />
                             </div>
-                            {accumulatedData.length > 0 ? (
+                            {geoJsonData.length > 0 ? (
                                 <pre className="text-2xl flex justify-center text-gray-800 p-4 mt-2 rounded-lg bg-gray-100 overflow-auto">
-                                    <code className="whitespace-pre-wrap">{JSON.stringify(accumulatedData, null, 2)}</code>
+                                    <code className="whitespace-pre-wrap">{JSON.stringify(geoJsonData, null, 2)}</code>
                                 </pre>
                             ) : (
                                 <div className="text-gray-500 text-center">No data available</div>
