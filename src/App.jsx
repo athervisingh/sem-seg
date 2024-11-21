@@ -209,68 +209,120 @@ const App = () => {
       setLoading(true);
 
       const combinedData = {
-        geojson: geoJsonData,
-        bands: bandValues,
-        date: selectedDate,
-      };
-      console.log("data", combinedData);
-
-      // Establish a WebSocket connection
-      const socket = new WebSocket("wss://khaleeque.in/get_gee_image")
-      socket.onopen = () => {
-        console.log("WebSocket connection established");
-
-        // Send the initial combined data to the backend via WebSocket
-        socket.send(JSON.stringify(combinedData));
+        geojson: geoJsonData, // Your GeoJSON data
+        bands: bandValues,     // Your band values
+        date: selectedDate,    // The selected date
       };
 
-      // Handle messages from the backend
-      socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+      console.log("Sending data to backend:", combinedData);
+    //   const params = new URLSearchParams({
+    //     data: JSON.stringify(combinedData)
+    //   });
+    //  console.log("params",params)
+    //   const eventSource = new EventSource(`https://4181-103-172-221-178.ngrok-free.app/get_gee_image?${params}`);
+      // await axios.post("https://4181-103-172-221-178.ngrok-free.app/get_gee_image", combinedData, {
 
-        // Process received data (image and geojson)
-        const { image, geoJson } = data;
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },
+      //   timeout: 300000, // Set the timeout as needed
+      // });
 
-        if (image) {
-          const imageBlob = new Blob([Uint8Array.from(atob(image), (c) => c.charCodeAt(0))], { type: "image/jpeg" });
-          const imageURLFromBackend = URL.createObjectURL(imageBlob);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', 'https://4181-103-172-221-178.ngrok-free.app/stream_images', true);
+      xhr.timeout = 10000; // Timeout after 10 seconds
 
-          // Generate the image from pixels
-          generateImageFromPixels(imageURLFromBackend,geojson);
-          setRequestImage(true);
-          setShowImageButton(false);
-          setShowSegmentButton(true);
-          setenableClasses(true);
+      // Initialize previous length for slicing the response in chunks
+      xhr.prevLen = 0;
+
+      // Handle timeout
+      xhr.ontimeout = function () {
+        console.error('Request timed out!');
+      };
+
+      // Handle progress as the response is being received
+      xhr.onprogress = function () {
+        // Get the full response text up to this point
+        var responseText = xhr.responseText;
+
+        // Get the new chunk of data since the last progress update
+        var chunk = responseText.slice(xhr.prevLen);
+        xhr.prevLen = responseText.length; // Update previous length
+
+        // Process the chunk (you can parse JSON if needed, depending on your backend response)
+        try {
+          // var data = JSON.parse(chunk);
+          console.log(chunk);
+
+          // Handle the data (like images or messages) here
+          if (data.status && data.status === 'done') {
+            console.log('Processing complete.');
+            xhr.abort(); // Close the connection when processing is complete
+          }
+
+        } catch (e) {
+          console.error('Error processing chunk:', e);
         }
-
-        if (geoJson) {
-          setGeoJsonData((prevData) => [...prevData, geoJson]);
-        }
       };
 
-      // Handle WebSocket errors
-      socket.onerror = (error) => {
-        console.error("WebSocket error", error);
-        alert("An error occurred with the WebSocket connection.");
+      // Handle the complete load of the request
+      xhr.onload = function () {
+        console.log('Request completed!');
+        // You can handle final steps when the entire request is loaded
       };
 
-      // Handle WebSocket closure
-      socket.onclose = () => {
-        console.log("WebSocket connection closed");
-        setLoading(false);
-        setLoadingImage(false);
+      // Handle any errors during the request
+      xhr.onerror = function () {
+        console.error('Request failed.');
       };
+
+      // Send the request
+      xhr.send();
+
+
+
+
+      // Step 2: Set up SSE to listen for streaming data from the backend
+      // const eventSource = new EventSource("https://4181-103-172-221-178.ngrok-free.app/stream_images");
+
+      // eventSource.onmessage = function (event) {
+      //   const chunk = JSON.parse(event.data);
+      //   console.log("chunk", chunk);
+
+      //   // Handle incoming image (base64) and GeoJSON data here
+      //   // if (chunk.image) {
+      //   //   console.log("GeoJSON Data:", chunk.geojson); // Base64 image
+      //   //   // generateImageFromPixels(imageURLFromBackend); // Your method to handle the image
+      //   // }
+
+      //   // if (chunk.geojson) {
+      //   //   // Handle GeoJSON data (you can store or process as needed)
+      //   //   console.log("GeoJSON Data:", chunk.geojson);
+      //   // }
+
+      //   // Check for completion signal and close the connection when done
+      //   if (chunk.status === "done") {
+      //     eventSource.close();
+      //     setShowSegmentButton(true);
+      //     setenableClasses(true);
+      //   }
+      // };
+
+      // eventSource.onerror = function (error) {
+      //   console.error("SSE Error: ", error);
+      //   eventSource.close();
+      //   alert("An error occurred while receiving the data.");
+      // };
+
     } catch (error) {
-      console.error("Error while setting up WebSocket", error);
+      console.error("Error:", error);
       alert("An unknown error occurred.");
-      window.location.reload();
     } finally {
       setLoading(false);
       setLoadingImage(false);
     }
   };
-
-  const sendMaskData = async () => {  // backend
+  const sendMaskData = async () => {  
     if (requestMask) {
       handleMaskShow();
       return;
