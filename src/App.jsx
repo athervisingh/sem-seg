@@ -1,4 +1,4 @@
-
+// Main routte
 import { useEffect, useState, useCallback } from "react";
 import { MapContainer, TileLayer, LayersControl, ImageOverlay, } from "react-leaflet";
 import Joyride from "react-joyride";
@@ -13,11 +13,9 @@ import Slider from "./components/Slider";
 import UtilityButtons from "./components/UtilityButtons";
 import DropDowns from "./components/Dropdowns";
 import ImageOverlays from "./components/ImageOverlays";
-import toggleGif from "./assets/toggle.gif"
-import classGif from "./assets/class.gif"
-import roiGif from "./assets/roi.gif"
-import advancedGif from "./assets/advanced.gif"
+import { TourStep } from "./components/TourStep";
 import OpacitySlider from "./components/OpacitySlider";
+import ControlBar from "./components/ControlBar";
 
 const App = () => {
   const [loadingImage, setLoadingImage] = useState(false);
@@ -50,7 +48,7 @@ const App = () => {
   const [modelThresHold, setModelThresHold] = useState('1');
   const [opacitySlider, setOpacitySlider] = useState(false);
   const [showImageButton, setShowImageButton] = useState(true);
-  const [runTour, setRunTour] = useState(true);
+
   const [allLayers, setAllLayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSegmentButton, setShowSegmentButton] = useState(false);
@@ -58,6 +56,8 @@ const App = () => {
     const storedData = localStorage.getItem('tour');
     return storedData ? false : true;
   });
+
+  const steps = TourStep(beacon)
 
   useEffect(() => {
     const storedData = localStorage.getItem('tour');
@@ -67,9 +67,9 @@ const App = () => {
       axios.get('https://khaleeque.in/set_ip', {
       })
     }
-    
+
   }, [])
-  
+
 
   const [class_Data, setClass_Data] = useState(() => {
     const storedData = localStorage.getItem('class_data');
@@ -81,83 +81,6 @@ const App = () => {
     return storedData ? JSON.parse(storedData) : {};
   });
 
-  const steps = [
-    {
-      target: 'body', // Global target for the welcome message
-      content: 'Welcome to Sementic Segmentation of satellite imagery! This tool allows users to perform interactive semantic segmentation on satellite imagery using WMS services while leveraging on-device GPU/NPU for enhanced performance.',
-      disableBeacon: beacon
-    },
-    {
-      target: '[data-tour="roi-dropdown"]', // Select by attribute
-      content: 
-      (
-        <div>
-            <p>Start by selection a Region of Interest. Begin your analysis by marking the area you want to focus with one of the draw tools. <br /> <b>Make sure to choose the scale less than or equals to 5 Km</b></p>
-          <img
-              src={roiGif}
-              alt="Step 2 GIF"
-            style={{ width: '100%', height: 'auto' }}
-          />
-        </div>
-      ),
-    },
-
-    {
-      target: '[data-tour="get-image"]',
-      content: 'Click the "Image" button to load the satellite imagery for your selected ROI Or Click Segment to load the mask or segmented image on the screen. ',
-    },
-    {
-      target: '[data-tour="class-dropdown"]',
-      content: 
-      (
-        <div>
-          <p>Select the class/feature you want to extract or segment, such as urban areas, forests, or rivers.</p>
-          <img
-            src={classGif}
-            alt="Step 2 GIF"
-            style={{ width: '100%', height: 'auto' }}
-          />
-        </div>
-      ),
-    },
-    {
-      target: '[data-tour="reload-btn"]', // Assuming you have a reload button
-      content: 'Click here to reload the current view or reset your analysis.',
-    },
-    {
-      target: '[data-tour="scale-component"]', // Assuming you have a scale selection component
-      content:
-      (
-        <div>
-          <p>For best results make selection less than or equal to 5km. <br /> You can toggle between the satellite map and the street map according to your requirements</p>
-          <img
-            src={toggleGif}
-            alt="Step 2 GIF"
-            style={{ width: '100%', height: 'auto' }}
-          />
-        </div>
-      ),
-
-    },
-    {
-      target: '[data-tour="search-bar"]', // For the search bar
-      content: 'Use the search bar to quickly find specific locations or features within the satellite imagery.',
-    },
-    {
-      target: '[data-tour="Humburger"]', // For the search bar
-      content: (
-        <div>
-          <p>This is the advanced section, you can select the bands, models and adjust the thresholds
-            Also you can export geojson for the selected features</p>
-          <img
-            src={advancedGif}
-            alt="Step 2 GIF"
-            style={{ width: '100%', height: 'auto' }}
-          />
-        </div>
-      ),
-    },
-  ];
 
   const handleSliderChange = (name, value) => () => {
     setImageData(prev => ({
@@ -167,7 +90,7 @@ const App = () => {
         opacity: parseFloat(imageData[name].opacity + value),
       },
     }));
- 
+
   };
 
   const handleModelChange = (e) => {
@@ -225,7 +148,7 @@ const App = () => {
       const newData = Object.keys(storedData).map((ele, index) => (
         <option key={index} value={storedData[ele] || ""} name={ele}>{ele}</option>
       ));
-      
+
       setclassdata(newData);
 
       if (name.length) {
@@ -238,9 +161,30 @@ const App = () => {
 
   useEffect(() => { getROIdata(); getclassdata(); }, []);
 
-  const generateImageFromPixels = useCallback((imageURLFromBackend) => { setImageUrl(imageURLFromBackend); setGeoJsonData([]) }, []);
+  const generateImageFromPixels = useCallback((imageURLFromBackend, geoJson) => {
+    if (!geoJson || !geoJson.features || geoJson.features.length === 0) {
+      console.error("Invalid GeoJSON data received");
+      return;
+    }
 
-  const generateMaskFromPixels = (data) => {
+   
+    const coordinates = geoJson.features[0].geometry.coordinates[0];
+    const bounds = [
+      [coordinates[0][1], coordinates[0][0]], // South-West [lat, lng]
+      [coordinates[2][1], coordinates[2][0]], // North-East [lat, lng]
+    ];
+
+    // ImageOverlay to place the image on the map
+    <ImageOverlay
+      url={imageUrl}
+      bounds={bounds}
+      opacity={0.7} // Optional: Adjust image transparency
+    />
+
+  }, []);
+
+
+  const generateMaskFromPixels = (data) => {// backend
     let images = {};
     Object.keys(data).forEach(key => {
       const [base64Image, opacity, area] = data[key];
@@ -265,49 +209,60 @@ const App = () => {
       setLoading(true);
 
       const combinedData = {
-        "geojson": geoJsonData,
-        "bands": bandValues,
-        "date": selectedDate,
+        geojson: geoJsonData,
+        bands: bandValues,
+        date: selectedDate,
       };
-      console.log("data",combinedData)
+      console.log("data", combinedData);
 
-      const response = await axios.post(
-        "https://khaleeque.in/get_gee_image",
-        combinedData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          responseType: "blob",
-          timeout: 300000,
+      // Establish a WebSocket connection
+      const socket = new WebSocket("wss://khaleeque.in/get_gee_image")
+      socket.onopen = () => {
+        console.log("WebSocket connection established");
+
+        // Send the initial combined data to the backend via WebSocket
+        socket.send(JSON.stringify(combinedData));
+      };
+
+      // Handle messages from the backend
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        // Process received data (image and geojson)
+        const { image, geoJson } = data;
+
+        if (image) {
+          const imageBlob = new Blob([Uint8Array.from(atob(image), (c) => c.charCodeAt(0))], { type: "image/jpeg" });
+          const imageURLFromBackend = URL.createObjectURL(imageBlob);
+
+          // Generate the image from pixels
+          generateImageFromPixels(imageURLFromBackend,geojson);
+          setRequestImage(true);
+          setShowImageButton(false);
+          setShowSegmentButton(true);
+          setenableClasses(true);
         }
-      );
 
-      const pixelData = await response.data;
+        if (geoJson) {
+          setGeoJsonData((prevData) => [...prevData, geoJson]);
+        }
+      };
 
-      const imageURLFromBackend = URL.createObjectURL(pixelData);
-      generateImageFromPixels(imageURLFromBackend);
-      setRequestImage(true);
-      setShowImageButton(false);
-      setShowSegmentButton(true);
-      setenableClasses(true);
+      // Handle WebSocket errors
+      socket.onerror = (error) => {
+        console.error("WebSocket error", error);
+        alert("An error occurred with the WebSocket connection.");
+      };
 
-      if (allLayers.length) {
-        allLayers.forEach((ele) => {
-          ele[0].removeLayer(ele[1]);
-        });
-        setAllLayers([]);
-        setShowImageButton(false);
-      }
+      // Handle WebSocket closure
+      socket.onclose = () => {
+        console.log("WebSocket connection closed");
+        setLoading(false);
+        setLoadingImage(false);
+      };
     } catch (error) {
-      if (error.response && error.response.status === 400) {
-        const blobError = error.response.data;
-        const errorMsg = await blobError.text();
-        alert(`Error : ${errorMsg}`);
-      } else {
-        alert('An unknown error occurred.');
-      }
+      console.error("Error while setting up WebSocket", error);
+      alert("An unknown error occurred.");
       window.location.reload();
     } finally {
       setLoading(false);
@@ -315,17 +270,11 @@ const App = () => {
     }
   };
 
-  const sendMaskData = async () => {
+  const sendMaskData = async () => {  // backend
     if (requestMask) {
       handleMaskShow();
       return;
     }
-    const combinedData = {
-      "geojson": geoJsonData,
-      "model": modelSelection,
-      "thresholds": modelThresHold,
-    };
- 
 
     try {
       setLoading(true);
@@ -366,7 +315,7 @@ const App = () => {
       setenableROI(false);
       setShowImageButton(false);
       setdrawControl(false);
-    }  catch (error) {
+    } catch (error) {
       if (error.response && error.response.status === 400) {
         const blobError = error.response.data;
         const errorMsg = await blobError.text();
@@ -406,7 +355,7 @@ const App = () => {
       <div className="absolute z-[1000] bottom-7" onClick={() => localStorage.setItem("tour", "true")}>
         <Joyride
           steps={steps}
-          run={runTour}
+          run={true}
           continuous
           showSkipButton
           showProgress
@@ -431,7 +380,7 @@ const App = () => {
         zoom={4}
         dragging={!isDraggingSlider}
         style={{ height: "100vh", width: "100%", zIndex: "1" }}
-        doubleClickZoom= {false}
+        doubleClickZoom={false}
       >
         <LayersControl data-tour="satellite-btn" position="bottomright">
           <LayersControl.BaseLayer name="Simple Map">
@@ -449,25 +398,10 @@ const App = () => {
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        <div className="absolute m-3 d-flex gap-11 flex-wrap z-[1000] left-16 max-[1077px]:gap-7 ">
-          <div className="" data-tour="search-bar"><SearchComponent /></div>
-
-          {/* ROI Dropdown */}
-          <DropDowns dataTour={"roi-dropdown"} enable={enableROI} value={ROISelection} handleChange={handleROISelection} heading={"Region of Interest"} data={ROIdata} modal={"#exampleModal"} getData={getROIdata} />
-
-          {/* Classes Dropdown */}
-          <DropDowns dataTour={"class-dropdown"} enable={enableClasses} value={classSelection} handleChange={handleClassSelection} heading={"Classes"} data={classdata} modal={"#classModel"} getData={getclassdata} />
-
-          <div className={showMask ? 'z-[1000] cursor-pointer w-[178px] bg-white h-9 text-center font-bold text-xs border border-black rounded-lg ' : 'hidden'}>
-
-            <button className="w-full h-full" onClick={() => setOpacitySlider(!opacitySlider)}>{opacitySlider ? 'Hide Opacity' : 'Show Opacity'}</button>
-
-            <OpacitySlider opacitySlider={opacitySlider} imageData={imageData} handleSliderChange={handleSliderChange} setIsDraggingSlider={setIsDraggingSlider} />
-          </div>
-        </div>
+        <ControlBar enableROI={enableROI} ROISelection={ROISelection} handleROISelection={handleROISelection} ROIdata={ROIdata} getROIdata={getROIdata} enableClasses={enableClasses} classSelection={classSelection} handleClassSelection={handleClassSelection} classdata={classdata} getclassdata={getclassdata} showMask={showMask} setOpacitySlider={setOpacitySlider} opacitySlider={opacitySlider} imageData={imageData} handleSliderChange={handleSliderChange} setIsDraggingSlider={setIsDraggingSlider} />
 
         <ImageOverlays imageData={imageData} imageBounds={imageBounds} showMask={showMask} handleMaskShow={handleMaskShow} />
-
+        {/* component */}
         {imageUrl && imageBounds && showImage && (
           <ImageOverlay
             url={imageUrl}
