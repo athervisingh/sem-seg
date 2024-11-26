@@ -16,6 +16,7 @@ import ImageOverlays from "./components/ImageOverlays";
 import { TourStep } from "./components/TourStep";
 import OpacitySlider from "./components/OpacitySlider";
 import ControlBar from "./components/ControlBar";
+import { useMap } from "react-leaflet";
 
 const App = () => {
   const [loadingImage, setLoadingImage] = useState(false);
@@ -48,7 +49,7 @@ const App = () => {
   const [modelThresHold, setModelThresHold] = useState('1');
   const [opacitySlider, setOpacitySlider] = useState(false);
   const [showImageButton, setShowImageButton] = useState(true);
-
+const [  imageOverlays,setImageOverlays]=useState([])
   const [allLayers, setAllLayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showSegmentButton, setShowSegmentButton] = useState(false);
@@ -184,6 +185,20 @@ const App = () => {
   }, []);
 
 
+  const DynamicImageOverlays = ({ overlays }) => {
+    const map = useMap();
+
+    // Add overlays to the map dynamically
+    overlays.forEach(({ url, bounds }) => {
+      const imageOverlay = L.imageOverlay(url, bounds, { opacity: 0.8 });
+      imageOverlay.addTo(map);
+    });
+
+    return null; // This component doesn't render anything directly
+  };
+
+
+
   const generateMaskFromPixels = (data) => {// backend
     let images = {};
     Object.keys(data).forEach(key => {
@@ -196,132 +211,83 @@ const App = () => {
   const handleSelectionClick = (bounds) => { setImageBounds(bounds); };
   const handleImageShow = () => { setShowImage((prev) => !prev); };
   const getLayers = (elem) => { setAllLayers(prevData => [...prevData, elem]); }
+const sendGeoJsonData = async () => {
+  try {
+    setLoadingImage(true);
 
-  const sendGeoJsonData = async () => {
-    if (requestImage) {
-      handleImageShow();
-      return;
-    }
+    const combinedData = {
+      geojson: geoJsonData, // Your GeoJSON data
+      bands: bandValues, // Your band values
+      date: selectedDate, // The selected date
+    };
 
-    try {
-      setLoadingImage(true);
-      handleImageShow();
-      setLoading(true);
+    console.log("Sending data to backend:", combinedData);
 
-      const combinedData = {
-        geojson: geoJsonData, // Your GeoJSON data
-        bands: bandValues,     // Your band values
-        date: selectedDate,    // The selected date
-      };
+    // Send data to backend
+    await axios.post("http://127.0.0.1:5001/get_gee_image", combinedData, {
+      timeout: 10000,
+      withCredentials: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-      console.log("Sending data to backend:", combinedData);
-    //   const params = new URLSearchParams({
-    //     data: JSON.stringify(combinedData)
-    //   });
-    //  console.log("params",params)
-    //   const eventSource = new EventSource(`https://4181-103-172-221-178.ngrok-free.app/get_gee_image?${params}`);
-      // await axios.post("https://4181-103-172-221-178.ngrok-free.app/get_gee_image", combinedData, {
+    // Handle streaming response
+    const eventSource = new EventSource("http://127.0.0.1:5001/stream_images", {
+      withCredentials: true,
+    });
 
-      //   headers: {
-      //     "Content-Type": "application/json"
-      //   },
-      //   timeout: 300000, // Set the timeout as needed
-      // });
+    eventSource.onmessage = (event) => {
+      const chunk = JSON.parse(event.data);
+      console.log("Received chunk:", chunk);
 
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', 'https://4181-103-172-221-178.ngrok-free.app/stream_images', true);
-      xhr.timeout = 10000; // Timeout after 10 seconds
+      if (chunk.image && chunk.coordinates) {
+        const imageBase64 = chunk.image;
+        const coordinates =
+          chunk.coordinates.features[0].geometry.coordinates[0];
 
-      // Initialize previous length for slicing the response in chunks
-      xhr.prevLen = 0;
-
-      // Handle timeout
-      xhr.ontimeout = function () {
-        console.error('Request timed out!');
-      };
-
-      // Handle progress as the response is being received
-      xhr.onprogress = function () {
-        // Get the full response text up to this point
-        var responseText = xhr.responseText;
-
-        // Get the new chunk of data since the last progress update
-        var chunk = responseText.slice(xhr.prevLen);
-        xhr.prevLen = responseText.length; // Update previous length
-
-        // Process the chunk (you can parse JSON if needed, depending on your backend response)
-        try {
-          // var data = JSON.parse(chunk);
-          console.log(chunk);
-
-          // Handle the data (like images or messages) here
-          if (data.status && data.status === 'done') {
-            console.log('Processing complete.');
-            xhr.abort(); // Close the connection when processing is complete
-          }
-
-        } catch (e) {
-          console.error('Error processing chunk:', e);
+        // Validate coordinates
+        if (!coordinates || coordinates.length < 2) {
+          console.error(
+            "Invalid or missing coordinates for the image overlay."
+          );
+          return;
         }
-      };
 
-      // Handle the complete load of the request
-      xhr.onload = function () {
-        console.log('Request completed!');
-        // You can handle final steps when the entire request is loaded
-      };
+        // Convert coordinates to bounds
+        const bounds = L.latLngBounds(
+          coordinates.map((coord) => [coord[1], coord[0]]) // Convert [lng, lat] to [lat, lng]
+        );
 
-      // Handle any errors during the request
-      xhr.onerror = function () {
-        console.error('Request failed.');
-      };
+        // Prepare the image URL
+        const imageUrl = `data:image/png;base64,${imageBase64}`;
 
-      // Send the request
-      xhr.send();
+        // Add the image overlay to the map dynamically
+        setImageOverlays((prevOverlays) => [
+          ...prevOverlays,
+          { url: imageUrl, bounds },
+        ]);
+      }
 
+      if (chunk.status === "done") {
+        eventSource.close();
+        setLoadingImage(false);
+      }
+    };
 
-
-
-      // Step 2: Set up SSE to listen for streaming data from the backend
-      // const eventSource = new EventSource("https://4181-103-172-221-178.ngrok-free.app/stream_images");
-
-      // eventSource.onmessage = function (event) {
-      //   const chunk = JSON.parse(event.data);
-      //   console.log("chunk", chunk);
-
-      //   // Handle incoming image (base64) and GeoJSON data here
-      //   // if (chunk.image) {
-      //   //   console.log("GeoJSON Data:", chunk.geojson); // Base64 image
-      //   //   // generateImageFromPixels(imageURLFromBackend); // Your method to handle the image
-      //   // }
-
-      //   // if (chunk.geojson) {
-      //   //   // Handle GeoJSON data (you can store or process as needed)
-      //   //   console.log("GeoJSON Data:", chunk.geojson);
-      //   // }
-
-      //   // Check for completion signal and close the connection when done
-      //   if (chunk.status === "done") {
-      //     eventSource.close();
-      //     setShowSegmentButton(true);
-      //     setenableClasses(true);
-      //   }
-      // };
-
-      // eventSource.onerror = function (error) {
-      //   console.error("SSE Error: ", error);
-      //   eventSource.close();
-      //   alert("An error occurred while receiving the data.");
-      // };
-
-    } catch (error) {
-      console.error("Error:", error);
-      alert("An unknown error occurred.");
-    } finally {
-      setLoading(false);
+    eventSource.onerror = (error) => {
+      console.error("SSE Error:", error);
+      eventSource.close();
+      alert("An error occurred while receiving the data.");
       setLoadingImage(false);
-    }
-  };
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    alert("An unknown error occurred.");
+    setLoadingImage(false);
+  }
+};
+
   const sendMaskData = async () => {  
     if (requestMask) {
       handleMaskShow();
@@ -404,7 +370,10 @@ const App = () => {
 
   return (
     <div className="relative" style={{ zIndex: "10" }}>
-      <div className="absolute z-[1000] bottom-7" onClick={() => localStorage.setItem("tour", "true")}>
+      <div
+        className="absolute z-[1000] bottom-7"
+        onClick={() => localStorage.setItem("tour", "true")}
+      >
         <Joyride
           steps={steps}
           run={true}
@@ -418,14 +387,38 @@ const App = () => {
           }}
         />
       </div>
-      <div className="z-[1000] absolute right-4 w-20 h-20" data-tour="Humburger"></div>
-      {loading ? (<Loading />) : null}
+      <div
+        className="z-[1000] absolute right-4 w-20 h-20"
+        data-tour="Humburger"
+      ></div>
+      {loading ? <Loading /> : null}
 
       {/* HAMBURGER SLIDER */}
-      <Slider setModelThresHold={setModelThresHold} setBandValues={setBandValues} setSelectedDate={setSelectedDate} selectedDate={selectedDate} modelSelection={modelSelection} handleModelChange={handleModelChange} ThresholdClass={ThresholdClass} geoJsonData={geoJsonData} modelThresHold={modelThresHold} />
+      <Slider
+        setModelThresHold={setModelThresHold}
+        setBandValues={setBandValues}
+        setSelectedDate={setSelectedDate}
+        selectedDate={selectedDate}
+        modelSelection={modelSelection}
+        handleModelChange={handleModelChange}
+        ThresholdClass={ThresholdClass}
+        geoJsonData={geoJsonData}
+        modelThresHold={modelThresHold}
+      />
 
       {/* Image Segment Reload */}
-      <UtilityButtons ROIdisabled={!ROISelection} classdisabled={!classSelection} showImageButton={showImageButton} sendGeoJsonData={sendGeoJsonData} loadingImage={loadingImage} sendMaskData={sendMaskData} loadingMask={loadingMask} showSegmentButton={showSegmentButton} imageButtonDisabled={imageButtonDisabled} segmentButtonDisabled={segmentButtonDisabled} />
+      <UtilityButtons
+        ROIdisabled={!ROISelection}
+        classdisabled={!classSelection}
+        showImageButton={showImageButton}
+        sendGeoJsonData={sendGeoJsonData}
+        loadingImage={loadingImage}
+        sendMaskData={sendMaskData}
+        loadingMask={loadingMask}
+        showSegmentButton={showSegmentButton}
+        imageButtonDisabled={imageButtonDisabled}
+        segmentButtonDisabled={segmentButtonDisabled}
+      />
 
       <MapContainer
         center={[28.6139, 77.209]}
@@ -450,9 +443,37 @@ const App = () => {
           </LayersControl.BaseLayer>
         </LayersControl>
 
-        <ControlBar enableROI={enableROI} ROISelection={ROISelection} handleROISelection={handleROISelection} ROIdata={ROIdata} getROIdata={getROIdata} enableClasses={enableClasses} classSelection={classSelection} handleClassSelection={handleClassSelection} classdata={classdata} getclassdata={getclassdata} showMask={showMask} setOpacitySlider={setOpacitySlider} opacitySlider={opacitySlider} imageData={imageData} handleSliderChange={handleSliderChange} setIsDraggingSlider={setIsDraggingSlider} />
+        <ControlBar
+          enableROI={enableROI}
+          ROISelection={ROISelection}
+          handleROISelection={handleROISelection}
+          ROIdata={ROIdata}
+          getROIdata={getROIdata}
+          enableClasses={enableClasses}
+          classSelection={classSelection}
+          handleClassSelection={handleClassSelection}
+          classdata={classdata}
+          getclassdata={getclassdata}
+          showMask={showMask}
+          setOpacitySlider={setOpacitySlider}
+          opacitySlider={opacitySlider}
+          imageData={imageData}
+          handleSliderChange={handleSliderChange}
+          setIsDraggingSlider={setIsDraggingSlider}
+        />
 
-        <ImageOverlays imageData={imageData} imageBounds={imageBounds} showMask={showMask} handleMaskShow={handleMaskShow} />
+        <ImageOverlays
+          imageData={imageOverlays}
+          imageBounds={imageBounds}
+          showMask={showMask}
+          handleMaskShow={handleMaskShow}
+        />
+        <ImageOverlays
+          imageData={imageData}
+          imageBounds={imageBounds}
+          showMask={showMask}
+          handleMaskShow={handleMaskShow}
+        />
         {/* component */}
         {imageUrl && imageBounds && showImage && (
           <ImageOverlay
@@ -479,10 +500,13 @@ const App = () => {
             setSegmentButtonDisabled={setSegmentButtonDisabled}
           />
         ) : null}
-        <div className="p-10 absolute bottom-9 right-8" data-tour="scale-component">
+        <div
+          className="p-10 absolute bottom-9 right-8"
+          data-tour="scale-component"
+        >
           <ScaleControl />
+          <DynamicImageOverlays overlays={imageOverlays} />
         </div>
-
       </MapContainer>
     </div>
   );
