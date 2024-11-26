@@ -269,7 +269,7 @@ const sendGeoJsonData = async () => {
         ]);
       }
 
-      if (chunk.status === "done") {
+      if (chunk.status === "completed") {
         eventSource.close();
         setLoadingImage(false);
       }
@@ -321,7 +321,7 @@ const sendGeoJsonData = async () => {
          const chunk = JSON.parse(event.data);
          console.log("Received chunk:", chunk);
 
-         if (chunk.status === "done") {
+         if (chunk.status === "completed") {
            eventSource.close();
            setLoadingImage(false);
          }
