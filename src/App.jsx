@@ -303,31 +303,35 @@ const sendGeoJsonData = async () => {
         "model": modelSelection,
         "thresholds": modelThresHold,
       };
-      const response = await axios.post("https://khaleeque.in/get_mask", combinedData, {
+    await axios.post("https://khaleeque.in/get_mask", combinedData, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
         },
-        responseType: "blob",
-        timeout: 300000,
       });
-      const blob = response.data;
-      const reader = new FileReader();
 
-      reader.onloadend = async () => {
-        const jsonData = reader.result;
-        const maskData = JSON.parse(jsonData);
-        generateMaskFromPixels(maskData);
-      }
-      reader.readAsText(blob);
-      setRequestMask(true);
-      if (allLayers.length) {
-        allLayers.map((ele) => {
-          ele[0].removeLayer(ele[1]);
-        });
+        const eventSource = new EventSource(
+          "http://127.0.0.1:5001/get_mask_stream",
+          {
+            withCredentials: true,
+          }
+        );
+      
+       eventSource.onmessage = (event) => {
+         const chunk = JSON.parse(event.data);
+         console.log("Received chunk:", chunk);
 
-        setAllLayers([]);
-      }
+         if (chunk.status === "done") {
+           eventSource.close();
+           setLoadingImage(false);
+         }
+       };
+        eventSource.onerror = (error) => {
+          console.error("SSE Error:", error);
+          eventSource.close();
+          alert("An error occurred while receiving the data.");
+          setLoadingImage(false);
+        };
       setShowSegmentButton(false);
       setenableClasses(false);
       setenableROI(false);
